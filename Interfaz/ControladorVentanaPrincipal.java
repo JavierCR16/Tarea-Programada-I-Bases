@@ -1,13 +1,14 @@
 package Interfaz;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 public class ControladorVentanaPrincipal implements Initializable {
@@ -246,13 +247,21 @@ public class ControladorVentanaPrincipal implements Initializable {
     @FXML
     Button agregarComentarioPlatillo;
 
+    Connection connection;
+    Statement statement;
 
     public void initialize(URL fxmlLocations, ResourceBundle resources){
+        establecerConexion();
+        setDatosDefecto();
+    }
 
+    public void establecerConexion(){
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             String connectionUrl = "jdbc:sqlserver://localhost:1433;" + "databaseName=PrograBases1;integratedSecurity=true;";
-            Connection con = DriverManager.getConnection(connectionUrl);
+            connection = DriverManager.getConnection(connectionUrl);
+            statement = connection.createStatement();
+
         }
         catch (ClassNotFoundException ex)
         {
@@ -261,6 +270,69 @@ public class ControladorVentanaPrincipal implements Initializable {
         catch(SQLException e){
             e.printStackTrace();
         }
+
+    }
+
+    public void agregarRestaurante(){
+
+
+    }
+
+    public void setDatosDefecto(){
+        String sqlCargarPaises = //FIXME  Revisar tabla CARGARPAISES y ver porque no esta insertando, puede ser un error en el with o el formato del csv
+
+                "BULK INSERT PROGRABASES1.dbo.CARGARPAISES" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
+                        " WITH( FIRSTROW = 2,FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n')";
+
+        String limpiarTablaCocina= "TRUNCATE TABLE CARGARTIPOSCOCINA";
+
+        String sqlCargarTiposCocina =
+                "BULK INSERT PROGRABASES1.dbo.CARGARTIPOSCOCINA" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
+                        " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
+
+        ArrayList<String> arregloCocina = new ArrayList<>();
+
+        try {
+            statement.executeUpdate(limpiarTablaCocina);
+            statement.executeUpdate(sqlCargarPaises);
+            statement.executeUpdate(sqlCargarTiposCocina);
+
+            ResultSet busquedaTiposCocina = statement.executeQuery("SELECT TIPOCOCINA FROM CARGARTIPOSCOCINA");
+
+
+            while(busquedaTiposCocina.next()){
+                arregloCocina.add(busquedaTiposCocina.getString("TIPOCOCINA").substring(0,1).toUpperCase() + busquedaTiposCocina.getString("TIPOCOCINA").substring(1));
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        ObservableList<String> listaCocina = FXCollections.observableArrayList(arregloCocina);
+
+        cuadroSexoNuevoColaborador.getItems().addAll("Hombre","Mujer");
+        cuadroEstablecimiento.getItems().addAll( "Restaurante", "Venta de Postres", "Cafetería", "Pastelería", "Bar");
+        cuadroRangoPrecio.getItems().addAll( "Comida Popular", "Intermedio", "Comida Fina" );
+        cuadroTipoCocina.setItems(listaCocina);
+        cuadroRestriccionesDieteticas.getItems().addAll( "Vegetarianas", "Veganas", "Sin Gluten");
+        cuadroBuenoPara.getItems().addAll("Reuniones de Negocios", "Grupos", "Niños", "Bar", "Atmósfera Romántica", "Cenas Especiales");
+        cuadroTiempoComida.getItems().addAll("Desayuno","Brunch","Almuerzo","Cena");
+        tiempoComidaMas.getItems().addAll("Desayuno","Brunch","Almuerzo","Cena");
+        restriccionesDieteticasMas.getItems().addAll( "Vegetarianas", "Veganas", "Sin Gluten");
+        buenoParaMas.getItems().addAll("Reuniones de Negocios", "Grupos", "Niños", "Bar", "Atmósfera Romántica", "Cenas Especiales");
+        tipoCocinaMas.setItems(listaCocina);
+        cuadroActualizarEstablecimiento.getItems().addAll( "Restaurante", "Venta de Postres", "Cafetería", "Pastelería", "Bar");
+        cuadroActualizarRangoPrecio.getItems().addAll( "Comida Popular", "Intermedio", "Comida Fina" );
+        cuadroActualizarTiempoComida.getItems().addAll("Desayuno","Brunch","Almuerzo","Cena");
+        cuadroActualizarRestriccionesDieteticas.getItems().addAll( "Vegetarianas", "Veganas", "Sin Gluten");
+        cuadroActualizarTipoCocina.setItems(listaCocina);
+        cuadroActualizarBuenoPara.getItems().addAll("Reuniones de Negocios", "Grupos", "Niños", "Bar", "Atmósfera Romántica", "Cenas Especiales");
+        agregarComentarioClasificacionCliente.getItems().addAll("Familia", "Pareja", "Con Amigos", "Negocios", "Solo");
+        agregarComentarioValoracion.getItems().addAll("1","2","3","4","5");
+        agregarComentarioMes.getItems().addAll("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio"
+                ,"Agosto","Setiembre","Octubre","Noviembre","Diciembre");
 
     }
 
