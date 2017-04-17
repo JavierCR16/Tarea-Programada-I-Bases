@@ -5,6 +5,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 public class ControladorVentanaPrincipal implements Initializable {
@@ -245,6 +248,19 @@ public class ControladorVentanaPrincipal implements Initializable {
 
 
     public void initialize(URL fxmlLocations, ResourceBundle resources){
+
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            String connectionUrl = "jdbc:sqlserver://localhost:1433;" + "databaseName=PrograBases1;integratedSecurity=true;";
+            Connection con = DriverManager.getConnection(connectionUrl);
+        }
+        catch (ClassNotFoundException ex)
+        {
+            ex.printStackTrace();
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
 
     }
 

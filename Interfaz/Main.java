@@ -10,7 +10,6 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        //XdxdxdxdXdfgfg22
         Parent root = FXMLLoader.load(getClass().getResource("VentanaPrincipal.fxml"));
         primaryStage.setTitle("Restaurantes");
         primaryStage.setScene(new Scene(root, 1298, 597));

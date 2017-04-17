@@ -471,7 +471,9 @@
                   <TableView fx:id="tablaRestaurantesComentarios" layoutX="511.0" layoutY="116.0" prefHeight="200.0" prefWidth="489.0">
                     <columns>
                       <TableColumn prefWidth="75.0" text="Restaurante " />
-                      <TableColumn prefWidth="75.0" text="Comentario" />
+                      <TableColumn prefWidth="244.0" text="Comentario" />
+                        <TableColumn prefWidth="75.0" text="Año" />
+                        <TableColumn prefWidth="75.0" text="Mes" />
                     </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
