@@ -1,5 +1,6 @@
 package Interfaz;
 
+import Auxiliares.SolicitudAmistad;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -8,6 +9,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
 import java.net.URL;
@@ -81,6 +83,12 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     @FXML
     TableView tablaSolicitudesAmistad;
+
+    @FXML
+    TableColumn columnaNombreSolicitud;
+
+    @FXML
+    TableColumn columnaCorreoSolicitud;
 
     @FXML
     TextField cuadroNombreNuevoRestaurante;
@@ -265,6 +273,7 @@ public class ControladorVentanaPrincipal implements Initializable {
     public void initialize(URL fxmlLocations, ResourceBundle resources) {
         establecerConexion();
         setDatosDefecto();
+        configurarColumnasTablas();
 
         botonAgregarColaborador.setOnAction(event -> {
 
@@ -276,6 +285,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         botonLoguear.setOnAction(event->{
             loguearUsuario();
+            cuadroIngresarUsuario.clear();
         });
 
         botonRefrescarColaboradores.setOnAction(event->{
@@ -304,7 +314,8 @@ public class ControladorVentanaPrincipal implements Initializable {
                     busquedaCorreo = preparedStament.executeQuery();
 
                     while (busquedaCorreo.next()) {
-                        cuadroEnviarSolicitudColaboradoresCorreo.getItems().add(busquedaCorreo.getString("CORREO"));
+                        if(!correoColaboradorLogueado.equals(busquedaCorreo.getString("CORREO")))
+                            cuadroEnviarSolicitudColaboradoresCorreo.getItems().add(busquedaCorreo.getString("CORREO"));
                     }
 
                 } catch (SQLException e) {
@@ -319,6 +330,17 @@ public class ControladorVentanaPrincipal implements Initializable {
             if(cuadroEnviarSolicitudColaboradoresCorreo.getSelectionModel().getSelectedItem()!=null){
                 cuadroCorreoAmigo.setText(cuadroEnviarSolicitudColaboradoresCorreo.getSelectionModel().getSelectedItem().toString());
             }
+        });
+
+        botonEnviarSolicitud.setOnAction(event -> {
+            enviarSolicitud();
+            cuadroCorreoAmigo.clear();
+            cuadroEnviarSolicitudColaboradores.getSelectionModel().clearSelection();
+            cuadroEnviarSolicitudColaboradores.getSelectionModel().clearSelection();
+        });
+
+        botonActualizarSolicitudes.setOnAction(event -> {
+            refrescarSolicitudesAmistad();
         });
 
     }
@@ -585,6 +607,57 @@ public class ControladorVentanaPrincipal implements Initializable {
         }
     }
 
+    public void enviarSolicitud(){
+        String correoEmisor = cuadroCorreoLogueado.getText();
+        String correoReceptor = cuadroCorreoAmigo.getText();
+        String insercionSolicitud ="INSERT INTO SOLICITUDESAMISTAD" +
+                "(CORREOEMISOR,CORREORECEPTOR)" + " VALUES(?,?)";
 
+        if(correoEmisor.equals("")||correoReceptor.equals("")){
+            ventanaError("Se deben proveer los dos correos");
+        }
+        else{
+            try{
+                PreparedStatement preparedStatement = connection.prepareStatement(insercionSolicitud);
+                preparedStatement.setString(1,correoEmisor);
+                preparedStatement.setString(2,correoReceptor);
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+            }catch(SQLException e){
+                ventanaError("Ya se ha enviado la solicitud de amistad");
+            }
+        }
+    }
+
+    public void configurarColumnasTablas(){
+        columnaNombreSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad,String>("nombre"));
+        columnaCorreoSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad,String>("correo"));
+    }
+
+    public void refrescarSolicitudesAmistad(){
+        String buscarSolicitudes = "SELECT NOMBRE,APELLIDOPATERNO,APELLIDOMATERNO,CORREO  FROM COLABORADORES,SOLICITUDESAMISTAD WHERE CORREO=CORREOEMISOR " +
+                "AND CORREORECEPTOR=?";
+        ResultSet busquedaSolicitidudes =null;
+        ArrayList<SolicitudAmistad> arregloSolicitudes = new ArrayList<>();
+        try{
+            PreparedStatement preparedStatement = connection.prepareStatement(buscarSolicitudes);
+            preparedStatement.setString(1,correoColaboradorLogueado);
+            busquedaSolicitidudes = preparedStatement.executeQuery();
+
+            while(busquedaSolicitidudes.next()){
+                System.out.println(busquedaSolicitidudes.getString("CORREO"));
+                String nombre = busquedaSolicitidudes.getString("NOMBRE")+" "+
+                        busquedaSolicitidudes.getString("APELLIDOPATERNO")+" "+
+                        busquedaSolicitidudes.getString("APELLIDOMATERNO");
+                String correo = busquedaSolicitidudes.getString("CORREO");
+                arregloSolicitudes.add(new SolicitudAmistad(nombre,correo));
+            }
+            ObservableList<SolicitudAmistad> informacionSolicitudes = FXCollections.observableArrayList(arregloSolicitudes);
+            tablaSolicitudesAmistad.setItems(informacionSolicitudes);
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+    }
 
 }
