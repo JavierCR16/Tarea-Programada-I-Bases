@@ -343,6 +343,16 @@ public class ControladorVentanaPrincipal implements Initializable {
             refrescarSolicitudesAmistad();
         });
 
+        botonAceptarSolicitud.setOnAction(event->{
+            aceptarRechazarSolicitud(true);
+            refrescarSolicitudesAmistad();
+        });
+
+        botonRechazarSolicitud.setOnAction(event -> {
+            aceptarRechazarSolicitud(false);
+            refrescarSolicitudesAmistad();
+        });
+
     }
 
     public void establecerConexion() {
@@ -594,6 +604,12 @@ public class ControladorVentanaPrincipal implements Initializable {
                         busquedaColaboradores.getString("APELLIDOPATERNO")+" "+busquedaColaboradores.getString("APELLIDOMATERNO"));
             }
             ObservableList<String> listaColaboradores = FXCollections.observableArrayList(arregloColaboradores);
+
+            String buscarAmigos = "SELECT NOMBRE, APELLIDOPATERNO, APELLIDOMATERNO FROM COLABORADORES,AMIGOS WHERE" +
+                    " CORREO=CORREOAMIGO AND CORREOCOLABORADOR=?";
+            PreparedStatement buscarQuienesSonAmigoss;
+
+
             cuadroEnviarSolicitudColaboradores.setItems(listaColaboradores);
 
             }
@@ -618,11 +634,21 @@ public class ControladorVentanaPrincipal implements Initializable {
         }
         else{
             try{
-                PreparedStatement preparedStatement = connection.prepareStatement(insercionSolicitud);
-                preparedStatement.setString(1,correoEmisor);
-                preparedStatement.setString(2,correoReceptor);
-                preparedStatement.executeUpdate();
-                preparedStatement.close();
+                String buscarSolicitudYaEnviada = "SELECT CORREOEMISOR,CORREORECEPTOR FROM SOLICITUDESAMISTAD WHERE CORREOEMISOR=? AND CORREORECEPTOR=?";
+                PreparedStatement statementPreparado= connection.prepareStatement(buscarSolicitudYaEnviada);
+                statementPreparado.setString(1,correoReceptor);
+                statementPreparado.setString(2,correoEmisor);
+                ResultSet existeSolicitud = statementPreparado.executeQuery();
+
+                if(!existeSolicitud.next()) {
+                    PreparedStatement preparedStatement = connection.prepareStatement(insercionSolicitud);
+                    preparedStatement.setString(1, correoEmisor);
+                    preparedStatement.setString(2, correoReceptor);
+                    preparedStatement.executeUpdate();
+                    preparedStatement.close();
+                }
+                else
+                    ventanaError("Ya tiene una solicitud de amistad pendiente");
             }catch(SQLException e){
                 ventanaError("Ya se ha enviado la solicitud de amistad");
             }
@@ -657,6 +683,50 @@ public class ControladorVentanaPrincipal implements Initializable {
         }catch(SQLException e){
             e.printStackTrace();
         }
+    }
+
+    public void aceptarRechazarSolicitud(boolean aceptado){
+        SolicitudAmistad solicitudSeleccionada = (SolicitudAmistad) tablaSolicitudesAmistad.getSelectionModel().getSelectedItem();
+        String agregarAmigo ="INSERT INTO AMIGOS"+"(CORREOCOLABORADOR,CORREOAMIGO,ACEPTADO)"+"VALUES(?,?,?)";
+        if(aceptado){
+            try{
+                PreparedStatement insertarAmigo = connection.prepareStatement(agregarAmigo);
+                insertarAmigo.setString(1,correoColaboradorLogueado);
+                insertarAmigo.setString(2,solicitudSeleccionada.getCorreo());
+                insertarAmigo.setString(3,"SI");
+
+                insertarAmigo.executeUpdate();
+
+            }catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
+        else{
+            try {
+                PreparedStatement rechazarAmigo = connection.prepareStatement(agregarAmigo);
+                rechazarAmigo.setString(1, correoColaboradorLogueado);
+                rechazarAmigo.setString(2, solicitudSeleccionada.getCorreo());
+                rechazarAmigo.setString(3, "NO");
+
+                rechazarAmigo.executeUpdate();
+
+            }catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
+
+        try{
+            String eliminarSolicitudesAmistad = "DELETE FROM SOLICITUDESAMISTAD WHERE CORREOEMISOR = ? AND CORREORECEPTOR =?";
+            PreparedStatement preparedStatement = connection.prepareStatement(eliminarSolicitudesAmistad);
+            preparedStatement.setString(1,solicitudSeleccionada.getCorreo());
+            preparedStatement.setString(2,correoColaboradorLogueado);
+            preparedStatement.executeUpdate();
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+
     }
 
 }
