@@ -645,7 +645,6 @@ public class ControladorVentanaPrincipal implements Initializable {
             busquedaSolicitidudes = preparedStatement.executeQuery();
 
             while(busquedaSolicitidudes.next()){
-                System.out.println(busquedaSolicitidudes.getString("CORREO"));
                 String nombre = busquedaSolicitidudes.getString("NOMBRE")+" "+
                         busquedaSolicitidudes.getString("APELLIDOPATERNO")+" "+
                         busquedaSolicitidudes.getString("APELLIDOMATERNO");
