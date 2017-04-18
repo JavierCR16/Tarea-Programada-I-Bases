@@ -478,31 +478,42 @@ public class ControladorVentanaPrincipal implements Initializable {
     }
 
     public void setDatosDefecto() {
+
+        String limpiarTablaPaises = "TRUNCATE TABLE CARGARPAISES";
+
         String sqlCargarPaises = //FIXME  Revisar tabla CARGARPAISES y ver porque no esta insertando, puede ser un error en el with o el formato del csv
 
                 "BULK INSERT PROGRABASES1.dbo.CARGARPAISES" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
-                        " WITH( FIRSTROW = 2,FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n')";
+                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
+                        " WITH( FIRSTROW = 2,FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE = 'ACP')";
 
         String limpiarTablaCocina = "TRUNCATE TABLE CARGARTIPOSCOCINA";
 
         String sqlCargarTiposCocina =
                 "BULK INSERT PROGRABASES1.dbo.CARGARTIPOSCOCINA" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
+                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
 
         ArrayList<String> arregloCocina = new ArrayList<>();
 
+        ArrayList<String> arregloPaises = new ArrayList<>();
+
         try {
             statement.executeUpdate(limpiarTablaCocina);
+            statement.executeUpdate(limpiarTablaPaises);
             statement.executeUpdate(sqlCargarPaises);
             statement.executeUpdate(sqlCargarTiposCocina);
 
             ResultSet busquedaTiposCocina = statement.executeQuery("SELECT TIPOCOCINA FROM CARGARTIPOSCOCINA");
 
-
             while (busquedaTiposCocina.next()) {
                 arregloCocina.add(busquedaTiposCocina.getString("TIPOCOCINA").substring(0, 1).toUpperCase() + busquedaTiposCocina.getString("TIPOCOCINA").substring(1));
+            }
+
+            ResultSet busquedaNombresPaises = statement.executeQuery("SELECT NOMBRE FROM CARGARPAISES");
+
+            while (busquedaNombresPaises.next()) {
+                arregloPaises.add(busquedaNombresPaises.getString("NOMBRE").substring(0, 1).toUpperCase() + busquedaNombresPaises.getString("NOMBRE").substring(1));
             }
 
         } catch (Exception e) {
@@ -510,11 +521,13 @@ public class ControladorVentanaPrincipal implements Initializable {
         }
 
         ObservableList<String> listaCocina = FXCollections.observableArrayList(arregloCocina);
+        ObservableList<String> listaPaises = FXCollections.observableArrayList(arregloPaises);
 
         cuadroSexoNuevoColaborador.getItems().addAll("Hombre", "Mujer");
         cuadroEstablecimiento.getItems().addAll("Restaurante", "Venta de Postres", "Cafetería", "Pastelería", "Bar");
         cuadroRangoPrecio.getItems().addAll("Comida Popular", "Intermedio", "Comida Fina");
         cuadroTipoCocina.setItems(listaCocina);
+        cuadroPaisNuevoRestaurante.setItems(listaPaises);
         cuadroRestriccionesDieteticas.getItems().addAll("Vegetarianas", "Veganas", "Sin Gluten");
         cuadroBuenoPara.getItems().addAll("Reuniones de Negocios", "Grupos", "Niños", "Bar", "Atmósfera Romántica", "Cenas Especiales");
         cuadroTiempoComida.getItems().addAll("Desayuno", "Brunch", "Almuerzo", "Cena");
@@ -522,11 +535,13 @@ public class ControladorVentanaPrincipal implements Initializable {
         restriccionesDieteticasMas.getItems().addAll("Vegetarianas", "Veganas", "Sin Gluten");
         buenoParaMas.getItems().addAll("Reuniones de Negocios", "Grupos", "Niños", "Bar", "Atmósfera Romántica", "Cenas Especiales");
         tipoCocinaMas.setItems(listaCocina);
+        cuadroPaisNuevoColaborador.setItems(listaPaises);
         cuadroActualizarEstablecimiento.getItems().addAll("Restaurante", "Venta de Postres", "Cafetería", "Pastelería", "Bar");
         cuadroActualizarRangoPrecio.getItems().addAll("Comida Popular", "Intermedio", "Comida Fina");
         cuadroActualizarTiempoComida.getItems().addAll("Desayuno", "Brunch", "Almuerzo", "Cena");
         cuadroActualizarRestriccionesDieteticas.getItems().addAll("Vegetarianas", "Veganas", "Sin Gluten");
         cuadroActualizarTipoCocina.setItems(listaCocina);
+        cuadroActualizarPaisRestaurante.setItems(listaPaises);
         cuadroActualizarBuenoPara.getItems().addAll("Reuniones de Negocios", "Grupos", "Niños", "Bar", "Atmósfera Romántica", "Cenas Especiales");
         agregarComentarioClasificacionCliente.getItems().addAll("Familia", "Pareja", "Con Amigos", "Negocios", "Solo");
         agregarComentarioValoracion.getItems().addAll("1", "2", "3", "4", "5");
