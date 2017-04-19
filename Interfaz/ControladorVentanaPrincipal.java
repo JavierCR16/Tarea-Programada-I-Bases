@@ -378,10 +378,14 @@ public class ControladorVentanaPrincipal implements Initializable {
         String usuarioColaborador = cuadroUsuarioNuevoColaborador.getText();
         String residenciaColaborador = cuadroResidenciaNuevoColaborador.getText();
         Object sexoColaborador = cuadroSexoNuevoColaborador.getSelectionModel().getSelectedItem();
+        Object paisColaborador= cuadroPaisNuevoColaborador.getSelectionModel().getSelectedItem();
         String sexo = "";
+        String pais = "";
 
         if(sexoColaborador!=null)
             sexo= sexoColaborador.toString();
+        if(paisColaborador!=null)
+            pais = paisColaborador.toString();
 
         if (nombreColaborador.equals("") | apellidosColaborador.equals("") | correoColaborador.equals("") | usuarioColaborador.equals(""))
             ventanaError("El nombre, apellidos, correo y usuario son obligatorios.");
@@ -403,7 +407,7 @@ public class ControladorVentanaPrincipal implements Initializable {
             }
             if(!huboError) {
                 escribirColaboradorBase(nombreColaborador,apellidoPaterno,apellidoMaterno,correoColaborador,usuarioColaborador,
-                        residenciaColaborador,sexo,"CostaRica");
+                        residenciaColaborador,sexo,pais);
             }
         }
 
@@ -484,14 +488,14 @@ public class ControladorVentanaPrincipal implements Initializable {
         String sqlCargarPaises = //FIXME  Revisar tabla CARGARPAISES y ver porque no esta insertando, puede ser un error en el with o el formato del csv
 
                 "BULK INSERT PROGRABASES1.dbo.CARGARPAISES" +
-                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE = 'ACP')";
 
         String limpiarTablaCocina = "TRUNCATE TABLE CARGARTIPOSCOCINA";
 
         String sqlCargarTiposCocina =
                 "BULK INSERT PROGRABASES1.dbo.CARGARTIPOSCOCINA" +
-                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
 
         ArrayList<String> arregloCocina = new ArrayList<>();
@@ -605,9 +609,11 @@ public class ControladorVentanaPrincipal implements Initializable {
     }
 
     public void setListaColaboradoresDisponibles(){
-        String buscarColaboradores = "SELECT DISTINCT NOMBRE, APELLIDOPATERNO, APELLIDOMATERNO FROM COLABORADORES WHERE CORREO!=?";
+        String buscarColaboradores = "SELECT  NOMBRE, APELLIDOPATERNO, APELLIDOMATERNO FROM COLABORADORES WHERE CORREO!=?";
         ResultSet busquedaColaboradores = null;
         ArrayList<String> arregloColaboradores = new ArrayList<>();
+        ArrayList<String> amigosColaborador = new ArrayList<>();
+        ArrayList<String> deQuienAmigosColaborador = new ArrayList<>();
 
         try{
             if(!correoColaboradorLogueado.equals("")){
@@ -616,16 +622,48 @@ public class ControladorVentanaPrincipal implements Initializable {
             busquedaColaboradores= preparedStatement.executeQuery();
             while(busquedaColaboradores.next()){
                 arregloColaboradores.add(busquedaColaboradores.getString("NOMBRE")+ " " +
-                        busquedaColaboradores.getString("APELLIDOPATERNO")+" "+busquedaColaboradores.getString("APELLIDOMATERNO"));
+                        busquedaColaboradores.getString("APELLIDOPATERNO")+" "
+                        +busquedaColaboradores.getString("APELLIDOMATERNO"));
             }
-            ObservableList<String> listaColaboradores = FXCollections.observableArrayList(arregloColaboradores);
+            ObservableList<String> listaColaboradores = FXCollections.observableArrayList(arregloColaboradores);//EL TOTAL
+
+
 
             String buscarAmigos = "SELECT NOMBRE, APELLIDOPATERNO, APELLIDOMATERNO FROM COLABORADORES,AMIGOS WHERE" +
                     " CORREO=CORREOAMIGO AND CORREOCOLABORADOR=?";
-            PreparedStatement buscarQuienesSonAmigoss;
+            PreparedStatement buscarQuienesSonAmigos = connection.prepareStatement(buscarAmigos);
+            buscarQuienesSonAmigos.setString(1,correoColaboradorLogueado);
+            ResultSet amigosDelColaborador = buscarQuienesSonAmigos.executeQuery();
 
+            while(amigosDelColaborador.next()){
+                amigosColaborador.add(amigosDelColaborador.getString("NOMBRE")+ " " +
+                        amigosDelColaborador.getString("APELLIDOPATERNO")+" "+
+                        amigosDelColaborador.getString("APELLIDOMATERNO"));
+            }
 
-            cuadroEnviarSolicitudColaboradores.setItems(listaColaboradores);
+            String buscarquienEsAmigoColaborador = "SELECT NOMBRE, APELLIDOPATERNO, APELLIDOMATERNO FROM COLABORADORES,AMIGOS WHERE" +
+                    " CORREO=CORREOCOLABORADOR AND CORREOAMIGO=?";
+            PreparedStatement buscarQuienAmigoColaborador = connection.prepareStatement(buscarquienEsAmigoColaborador);
+            buscarQuienAmigoColaborador.setString(1,correoColaboradorLogueado);
+            ResultSet quienAmigoColaborador = buscarQuienAmigoColaborador.executeQuery();
+
+            while(quienAmigoColaborador.next()){
+                deQuienAmigosColaborador.add(quienAmigoColaborador.getString("NOMBRE")+ " " +
+                        quienAmigoColaborador.getString("APELLIDOPATERNO")+" "+
+                        quienAmigoColaborador.getString("APELLIDOMATERNO"));
+            }
+
+            //cuadroEnviarSolicitudColaboradores.setItems(listaColaboradores);
+
+                for (String s : amigosColaborador) {
+                    if(listaColaboradores.contains(s))
+                        listaColaboradores.remove(s);
+                }
+                for (String s : deQuienAmigosColaborador) {
+                    if(listaColaboradores.contains(s))
+                        listaColaboradores.remove(s);
+                }
+                cuadroEnviarSolicitudColaboradores.setItems(listaColaboradores);
 
             }
             else{
@@ -655,7 +693,18 @@ public class ControladorVentanaPrincipal implements Initializable {
                 statementPreparado.setString(2,correoEmisor);
                 ResultSet existeSolicitud = statementPreparado.executeQuery();
 
-                if(!existeSolicitud.next()) {
+                String buscarPorSerRepetido = "SELECT CORREOCOLABORADOR,CORREOAMIGO FROM AMIGOS WHERE CORREOCOLABORADOR =? AND CORREOAMIGO=?";
+                PreparedStatement statementLadoAmigo = connection.prepareStatement(buscarPorSerRepetido);//ESTO POR SI EXISTIERA UN NOMBRE REPETIDO
+                statementLadoAmigo.setString(1,correoEmisor);
+                statementLadoAmigo.setString(2,correoReceptor);
+                ResultSet unLadoAmigo = statementLadoAmigo.executeQuery();
+
+                PreparedStatement statementOtroLadoAmigo = connection.prepareStatement(buscarPorSerRepetido);
+                statementOtroLadoAmigo.setString(1,correoReceptor);
+                statementOtroLadoAmigo.setString(2,correoEmisor);
+                ResultSet otroLadoAmigo = statementOtroLadoAmigo.executeQuery();
+
+                if(!existeSolicitud.next() & !unLadoAmigo.next()& !otroLadoAmigo.next()) {
                     PreparedStatement preparedStatement = connection.prepareStatement(insercionSolicitud);
                     preparedStatement.setString(1, correoEmisor);
                     preparedStatement.setString(2, correoReceptor);
