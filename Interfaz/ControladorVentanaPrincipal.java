@@ -498,13 +498,23 @@ public class ControladorVentanaPrincipal implements Initializable {
                         " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
 
+        String limpiarTablaCiudades = "TRUNCATE TABLE CARGARCIUDADES";
+
+     //   String sqlCargaCiudades =
+        //        "BULK INSERT PROGRABASES1.dbo.CARGARCIUDADES" +
+        //                " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\cities15000.txt'" +
+         //               " WITH(FIELDTERMINATOR = ' ',ROWTERMINATOR = ' ', CODEPAGE='ACP')";
+
         ArrayList<String> arregloCocina = new ArrayList<>();
 
         ArrayList<String> arregloPaises = new ArrayList<>();
 
+    //    ArrayList<String> arregloCiudades = new ArrayList<>();
+
         try {
             statement.executeUpdate(limpiarTablaCocina);
             statement.executeUpdate(limpiarTablaPaises);
+//            statement.executeUpdate(sqlCargaCiudades);
             statement.executeUpdate(sqlCargarPaises);
             statement.executeUpdate(sqlCargarTiposCocina);
 
