@@ -803,4 +803,81 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     }
 
+    public void agregarRestaurante(){
+        String nombreRestaurante = cuadroNombreNuevoRestaurante.getText();
+        Object paisRestaurante = cuadroPaisNuevoRestaurante.getSelectionModel().getSelectedItem().toString();
+       // String ciudadRestaurante = cuadroCiudadNuevoRestaurante.getSelectionModel().getSelectedItem().toString();
+        String descripcionRestaurante = cuadroDescripcionNuevoRestaurante.getText();
+        String instruccionesRestaurante = cuadroInstruccionesNuevoRestaurante.getText();
+        String direccionRestaurante = cuadroDireccionNuevoRestaurante.getText();
+        Object tipoEstablecimiento = cuadroEstablecimiento.getSelectionModel().getSelectedItem().toString();
+        Object rangoPrecio = cuadroRangoPrecio.getSelectionModel().getSelectedItem().toString();
+        Object tipoCocina = cuadroTipoCocina.getSelectionModel().getSelectedItem().toString();
+        Object tiempoComida = cuadroTiempoComida.getSelectionModel().getSelectedItem().toString();
+        Object restriccionesDieteticas = cuadroRestriccionesDieteticas.getSelectionModel().getSelectedItem().toString();
+        Object buenoPara = cuadroBuenoPara.getSelectionModel().getSelectedItem().toString();
+
+        if(nombreRestaurante.equals("")|| paisRestaurante ==null || descripcionRestaurante.equals("") || instruccionesRestaurante.equals("")
+                || direccionRestaurante.equals("") || tipoEstablecimiento==null||rangoPrecio ==null || tipoCocina ==null  || tiempoComida==null
+                || restriccionesDieteticas==null ||buenoPara ==null){
+            ventanaError("Se deben ingresar todos los datos del restaurante");
+        }
+        else{
+            try {
+
+                //*****************************************************************************************
+                String buscarCodigoDelPais = "SELECT ISO3 FROM CARGARPAISES  WHERE NOMBRE = ?";
+
+                PreparedStatement buscarPaisCodigo = connection.prepareStatement(buscarCodigoDelPais);
+
+                buscarPaisCodigo.setString(1,paisRestaurante.toString());
+
+                ResultSet paisEncontrado = buscarPaisCodigo.executeQuery();
+
+                String nombreIso ="";
+
+                while(paisEncontrado.next()){
+                    nombreIso=paisEncontrado.getString("ISO3");
+                }
+
+                String insertarEnPais = "INSERT INTO PAISES (CODIGO,NOMBRE) VALUES (?,?)";
+                PreparedStatement insercionPais = connection.prepareStatement(insertarEnPais);
+                insercionPais.setString(1,nombreIso);
+                insercionPais.setString(2,paisRestaurante.toString());
+                insercionPais.executeUpdate();
+                //********************************************************************************************
+                String insertarEnRestaurantes = "INSERT INTO RESTAURANTES (ID,NOMBRE,DESCRIPCION.DIRECCION,INSTRUCCIONES,IDCIUDAD,CODIGOPAIS,IDCARACTERISTICAS)" +
+                        "VALUES (?,?,?,?,?,?,?,?)";
+                //*************************************************************************************************************
+                String insertarEnCaracteristicas = "INSERT INTO CARACTERISTICAS (ID,TIPOESTABLECIMIENTO,RANGOPRECIO)" +
+                        "VALUES (?,?,?)";
+
+                int cuantasCaracteristicas = 0;
+
+                String cantidadCaracteristicas = "SELECT COUNT(*) FROM CARACTERISTICAS";
+
+                PreparedStatement contarTuplesCaracteristicas = connection.prepareStatement(cantidadCaracteristicas);
+                ResultSet cantCaracteristicas = contarTuplesCaracteristicas.executeQuery();
+                while(cantCaracteristicas.next()){
+                    cuantasCaracteristicas=cantCaracteristicas.getInt(1); //Cuantas caracteristicas hay
+                }
+
+                PreparedStatement insercionCaracteristica = connection.prepareStatement(insertarEnCaracteristicas);
+                insercionCaracteristica.setString(1,cuantasCaracteristicas+1+"");
+                insercionCaracteristica.setString(2,tipoEstablecimiento.toString());
+                insercionCaracteristica.setString(3,rangoPrecio.toString());
+                //**************************************************************************************************************
+
+                // TODO INSERTAR EN CIUDADES, FALTA PARSEAR LA CIUDAD ETC ...
+
+                //***************************************************************************************************************
+
+            }catch(SQLException e){
+                e.printStackTrace();
+            }
+
+
+        }
+    }
+
 }
