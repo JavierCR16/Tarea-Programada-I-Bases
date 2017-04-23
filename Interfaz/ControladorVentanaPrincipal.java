@@ -488,14 +488,14 @@ public class ControladorVentanaPrincipal implements Initializable {
         String sqlCargarPaises = //FIXME  Revisar tabla CARGARPAISES y ver porque no esta insertando, puede ser un error en el with o el formato del csv
 
                 "BULK INSERT PROGRABASES1.dbo.CARGARPAISES" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
+                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE = 'ACP')";
 
         String limpiarTablaCocina = "TRUNCATE TABLE CARGARTIPOSCOCINA";
 
         String sqlCargarTiposCocina =
                 "BULK INSERT PROGRABASES1.dbo.CARGARTIPOSCOCINA" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
+                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
 
         String limpiarTablaCiudades = "TRUNCATE TABLE CARGARCIUDADES";
