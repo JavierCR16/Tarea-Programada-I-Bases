@@ -14,10 +14,7 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class ControladorVentanaPrincipal implements Initializable {
 
@@ -353,6 +350,11 @@ public class ControladorVentanaPrincipal implements Initializable {
             refrescarSolicitudesAmistad();
         });
 
+        botonAceptarRestaurante.setOnAction(event ->{
+            agregarRestaurante();
+
+        });
+
     }
 
     public void establecerConexion() {
@@ -483,13 +485,21 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     public void setDatosDefecto() {
 
+
+        String quitarReferenciaARestaurantes = "ALTER TABLE RESTAURANTES DROP CONSTRAINT FK_RESTAURANTES_CARGARPAISES";
+        String agregarReferenciaARestaurantes = "ALTER TABLE RESTAURANTES ADD CONSTRAINT FK_RESTAURANTES_CARGARPAISES FOREIGN KEY(IDPAIS) REFERENCES CARGARPAISES(ISO3)";
+
         String limpiarTablaPaises = "TRUNCATE TABLE CARGARPAISES";
 
-        String sqlCargarPaises = //FIXME  Revisar tabla CARGARPAISES y ver porque no esta insertando, puede ser un error en el with o el formato del csv
+        String sqlCargarPaises =
 
                 "BULK INSERT PROGRABASES1.dbo.CARGARPAISES" +
                         " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE = 'ACP')";
+
+        //***********************************************************************************************************************************************************
+        String quitarReferenciaATiposCocinaRestaurante = "ALTER TABLE TIPOSCOCINARESTAURANTE DROP CONSTRAINT FK_TIPOSCOCINARESTAURANTE_CARGARTIPOSCOCINA";
+        String agregarReferenciaATiposCocinaRestaurante = "ALTER TABLE TIPOSCOCINARESTAURANTE ADD CONSTRAINT FK_TIPOSCOCINARESTAURANTE_CARGARTIPOSCOCINA FOREIGN KEY(NOMBRECOCINA) REFERENCES CARGARTIPOSCOCINA(TIPOCOCINA)";
 
         String limpiarTablaCocina = "TRUNCATE TABLE CARGARTIPOSCOCINA";
 
@@ -497,31 +507,78 @@ public class ControladorVentanaPrincipal implements Initializable {
                 "BULK INSERT PROGRABASES1.dbo.CARGARTIPOSCOCINA" +
                         " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
-
+        //************************************************************************************************************************************************************
+        String quitarReferenciaCiudades ="ALTER TABLE RESTAURANTES DROP CONSTRAINT FK_RESTAURANTES_CARGARCIUDADES";
+        String quitarLlavePrimaria = "ALTER TABLE CARGARCIUDADES DROP CONSTRAINT PK_CARGARCIUDADES";
+        String quitarID = "ALTER TABLE CARGARCIUDADES DROP COLUMN ID";
         String limpiarTablaCiudades = "TRUNCATE TABLE CARGARCIUDADES";
+        String agregarIdIdentity = "ALTER TABLE CARGARCIUDADES ADD  ID INT IDENTITY(1,1)";
+        String hacerLlavePrimaria ="ALTER TABLE CARGARCIUDADES ADD CONSTRAINT PK_CARGARCIUDADES PRIMARY KEY(ID)";
+        String agregarReferenciaCiudades = "ALTER TABLE RESTAURANTES ADD CONSTRAINT FK_RESTAURANTES_CARGARCIUDADES FOREIGN KEY(IDCIUDAD) REFERENCES CARGARCIUDADES(ID)";
 
-     //   String sqlCargaCiudades =
-        //        "BULK INSERT PROGRABASES1.dbo.CARGARCIUDADES" +
-        //                " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\cities15000.txt'" +
-         //               " WITH(FIELDTERMINATOR = ' ',ROWTERMINATOR = ' ', CODEPAGE='ACP')";
-
+        String sqlCargaCiudades =
+                "BULK INSERT PROGRABASES1.dbo.CARGARCIUDADES" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\ciudades.csv'" +
+                        " WITH( FIRSTROW =2, FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
+        //************************************************************************************************************************************************************
         ArrayList<String> arregloCocina = new ArrayList<>();
-
         ArrayList<String> arregloPaises = new ArrayList<>();
+        ArrayList<String> arregloCiudades = new ArrayList<>();
+        ArrayList<String> arregloEstablecimiento = new ArrayList<>();
+        ArrayList<String> arregloRangoPrecio = new ArrayList<>();
+        ArrayList<String> arregloBuenoPara = new ArrayList<>();
+        ArrayList<String> arregloRestriccionesDieteticas = new ArrayList<>();
+        ArrayList<String> arregloTiemposComida = new ArrayList<>();
 
-    //    ArrayList<String> arregloCiudades = new ArrayList<>();
 
         try {
+            statement.execute(quitarReferenciaCiudades);
+            statement.execute(quitarLlavePrimaria);
+            statement.execute(quitarID);
+            statement.executeUpdate(limpiarTablaCiudades);
+            statement.executeUpdate(sqlCargaCiudades);
+            statement.execute(agregarIdIdentity);
+            statement.execute(hacerLlavePrimaria);
+            statement.execute(agregarReferenciaCiudades);
+
+
+            statement.execute(quitarReferenciaATiposCocinaRestaurante);
             statement.executeUpdate(limpiarTablaCocina);
+            statement.execute(quitarReferenciaARestaurantes);
             statement.executeUpdate(limpiarTablaPaises);
-//            statement.executeUpdate(sqlCargaCiudades);
+
             statement.executeUpdate(sqlCargarPaises);
             statement.executeUpdate(sqlCargarTiposCocina);
+            statement.execute(agregarReferenciaATiposCocinaRestaurante);
+            statement.execute(agregarReferenciaARestaurantes);
+
 
             ResultSet busquedaTiposCocina = statement.executeQuery("SELECT TIPOCOCINA FROM CARGARTIPOSCOCINA");
 
             while (busquedaTiposCocina.next()) {
                 arregloCocina.add(busquedaTiposCocina.getString("TIPOCOCINA").substring(0, 1).toUpperCase() + busquedaTiposCocina.getString("TIPOCOCINA").substring(1));
+            }
+
+            ResultSet busquedaCiudades = statement.executeQuery("SELECT NOMBRE FROM CARGARCIUDADES");
+
+            while(busquedaCiudades.next()){
+                arregloCiudades.add(busquedaCiudades.getString("NOMBRE"));
+            }
+
+            ResultSet repetidosCiudades = statement.executeQuery("SELECT NOMBRE,COUNT(*)\n" +
+                    "  FROM CARGARCIUDADES\n" +
+                    "  GROUP BY NOMBRE\n" +
+                    "  HAVING COUNT(*) >1");
+            String buscarCiudadesRepetidas  = "SELECT NOMBRE,PROVINCIA FROM CARGARCIUDADES WHERE NOMBRE =?";
+
+            while(repetidosCiudades.next()){
+                arregloCiudades.removeAll(Collections.singleton(repetidosCiudades.getString("NOMBRE")));
+                PreparedStatement extraerCiudadesRepetidas = connection.prepareStatement(buscarCiudadesRepetidas);
+                extraerCiudadesRepetidas.setString(1,repetidosCiudades.getString("NOMBRE"));
+                ResultSet ciudadRepetida = extraerCiudadesRepetidas.executeQuery();
+                while(ciudadRepetida.next()){
+                    arregloCiudades.add(ciudadRepetida.getString("NOMBRE")+", "+ciudadRepetida.getString("PROVINCIA"));
+                }
             }
 
             ResultSet busquedaNombresPaises = statement.executeQuery("SELECT NOMBRE FROM CARGARPAISES");
@@ -530,33 +587,103 @@ public class ControladorVentanaPrincipal implements Initializable {
                 arregloPaises.add(busquedaNombresPaises.getString("NOMBRE").substring(0, 1).toUpperCase() + busquedaNombresPaises.getString("NOMBRE").substring(1));
             }
 
+            ResultSet repetidosPaises = statement.executeQuery("SELECT NOMBRE,COUNT(*)\n" +
+                    "  FROM CARGARPAISES\n" +
+                    "  GROUP BY NOMBRE\n" +
+                    "  HAVING COUNT(*) >1");
+
+            String buscarLosRepetidos = "SELECT NOMBRE,ISO3 FROM CARGARPAISES WHERE NOMBRE =?";
+            while(repetidosPaises.next()) {
+                arregloPaises.removeAll(Collections.singleton(repetidosPaises.getString("NOMBRE")));
+                PreparedStatement extraerRepetidos = connection.prepareStatement(buscarLosRepetidos);
+                extraerRepetidos.setString(1,repetidosPaises.getString("NOMBRE"));
+                ResultSet lineasRepetidas = extraerRepetidos.executeQuery();
+                while(lineasRepetidas.next()){
+                    arregloPaises.add(lineasRepetidas.getString("NOMBRE")+"/"+lineasRepetidas.getString("ISO3"));
+                }
+
+            }
+
+
+
+            ResultSet busquedaEstablecimientos = statement.executeQuery("SELECT TIPOESTABLECIMIENTO FROM ESTABLECIMIENTO");
+
+            while(busquedaEstablecimientos.next()){
+                arregloEstablecimiento.add(busquedaEstablecimientos.getString("TIPOESTABLECIMIENTO"));
+            }
+
+            ResultSet busquedaRangos = statement.executeQuery("SELECT TIPORANGO FROM RANGOPRECIO");
+
+            while(busquedaRangos.next()){
+                arregloRangoPrecio.add(busquedaRangos.getString("TIPORANGO"));
+            }
+
+            ResultSet busquedaBuenoPara = statement.executeQuery("SELECT TIPOBUENO FROM BUENOPARA");
+
+            while(busquedaBuenoPara.next()){
+                arregloBuenoPara.add(busquedaBuenoPara.getString("TIPOBUENO"));
+            }
+
+            ResultSet busquedaRestriccionesDieteticas = statement.executeQuery("SELECT RESTRICCION FROM RESTRICCIONESDIETETICAS");
+
+            while(busquedaRestriccionesDieteticas.next()){
+                arregloRestriccionesDieteticas.add(busquedaRestriccionesDieteticas.getString("RESTRICCION"));
+            }
+
+            ResultSet busquedaTiemposComida = statement.executeQuery("SELECT TIPOTIEMPO FROM TIEMPOSCOMIDA");
+
+            while(busquedaTiemposComida.next()){
+                arregloTiemposComida.add(busquedaTiemposComida.getString("TIPOTIEMPO"));
+            }
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         ObservableList<String> listaCocina = FXCollections.observableArrayList(arregloCocina);
         ObservableList<String> listaPaises = FXCollections.observableArrayList(arregloPaises);
+        ObservableList<String> listaCiudades = FXCollections.observableArrayList(arregloCiudades);
+        ObservableList<String> listaEstablecimiento = FXCollections.observableArrayList(arregloEstablecimiento);
+        ObservableList<String> listaRangos = FXCollections.observableArrayList(arregloRangoPrecio);
+        ObservableList<String> listaBuenoPara = FXCollections.observableArrayList(arregloBuenoPara);
+        ObservableList<String> listaRestricciones = FXCollections.observableArrayList(arregloRestriccionesDieteticas);
+        ObservableList<String> listaTiemposComida = FXCollections.observableArrayList(arregloTiemposComida);
+
+        Collections.sort(listaCiudades);
+        Collections.sort(listaPaises);
+        Collections.sort(listaCocina);
+        Collections.sort(listaTiemposComida);
+        Collections.sort(listaRestricciones);
+        Collections.sort(listaBuenoPara);
+        Collections.sort(listaRangos);
+        Collections.sort(listaEstablecimiento);
+
 
         cuadroSexoNuevoColaborador.getItems().addAll("Hombre", "Mujer");
-        cuadroEstablecimiento.getItems().addAll("Restaurante", "Venta de Postres", "Cafetería", "Pastelería", "Bar");
-        cuadroRangoPrecio.getItems().addAll("Comida Popular", "Intermedio", "Comida Fina");
+        //****************************************************************** Caracteristicas seteadas desde la base
+        cuadroEstablecimiento.setItems(listaEstablecimiento);
+        cuadroRangoPrecio.setItems(listaRangos);
         cuadroTipoCocina.setItems(listaCocina);
+        cuadroCiudadNuevoRestaurante.setItems(listaCiudades);
         cuadroPaisNuevoRestaurante.setItems(listaPaises);
-        cuadroRestriccionesDieteticas.getItems().addAll("Vegetarianas", "Veganas", "Sin Gluten");
-        cuadroBuenoPara.getItems().addAll("Reuniones de Negocios", "Grupos", "Niños", "Bar", "Atmósfera Romántica", "Cenas Especiales");
-        cuadroTiempoComida.getItems().addAll("Desayuno", "Brunch", "Almuerzo", "Cena");
-        tiempoComidaMas.getItems().addAll("Desayuno", "Brunch", "Almuerzo", "Cena");
-        restriccionesDieteticasMas.getItems().addAll("Vegetarianas", "Veganas", "Sin Gluten");
-        buenoParaMas.getItems().addAll("Reuniones de Negocios", "Grupos", "Niños", "Bar", "Atmósfera Romántica", "Cenas Especiales");
+        cuadroRestriccionesDieteticas.setItems(listaRestricciones);
+        cuadroBuenoPara.setItems(listaBuenoPara);
+        cuadroTiempoComida.setItems(listaTiemposComida);
+        tiempoComidaMas.setItems(listaTiemposComida);
+        restriccionesDieteticasMas.setItems(listaRestricciones);
+        buenoParaMas.setItems(listaBuenoPara);
         tipoCocinaMas.setItems(listaCocina);
         cuadroPaisNuevoColaborador.setItems(listaPaises);
-        cuadroActualizarEstablecimiento.getItems().addAll("Restaurante", "Venta de Postres", "Cafetería", "Pastelería", "Bar");
-        cuadroActualizarRangoPrecio.getItems().addAll("Comida Popular", "Intermedio", "Comida Fina");
-        cuadroActualizarTiempoComida.getItems().addAll("Desayuno", "Brunch", "Almuerzo", "Cena");
-        cuadroActualizarRestriccionesDieteticas.getItems().addAll("Vegetarianas", "Veganas", "Sin Gluten");
+        cuadroActualizarEstablecimiento.setItems(listaEstablecimiento);
+        cuadroActualizarRangoPrecio.setItems(listaRangos);
+        cuadroActualizarTiempoComida.setItems(listaTiemposComida);
+        cuadroActualizarRestriccionesDieteticas.setItems(listaRestricciones);
         cuadroActualizarTipoCocina.setItems(listaCocina);
         cuadroActualizarPaisRestaurante.setItems(listaPaises);
-        cuadroActualizarBuenoPara.getItems().addAll("Reuniones de Negocios", "Grupos", "Niños", "Bar", "Atmósfera Romántica", "Cenas Especiales");
+        cuadroActualizarBuenoPara.setItems(listaBuenoPara);
+        cuadroActualizarCiudadRestaurante.setItems(listaCiudades);
+        //*****************************************************************
         agregarComentarioClasificacionCliente.getItems().addAll("Familia", "Pareja", "Con Amigos", "Negocios", "Solo");
         agregarComentarioValoracion.getItems().addAll("1", "2", "3", "4", "5");
         agregarComentarioMes.getItems().addAll("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio"
@@ -805,75 +932,128 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     public void agregarRestaurante(){
         String nombreRestaurante = cuadroNombreNuevoRestaurante.getText();
-        Object paisRestaurante = cuadroPaisNuevoRestaurante.getSelectionModel().getSelectedItem().toString();
-       // String ciudadRestaurante = cuadroCiudadNuevoRestaurante.getSelectionModel().getSelectedItem().toString();
+        Object paisRestaurante = cuadroPaisNuevoRestaurante.getSelectionModel().getSelectedItem();
+        Object ciudadRestaurante = cuadroCiudadNuevoRestaurante.getSelectionModel().getSelectedItem();
         String descripcionRestaurante = cuadroDescripcionNuevoRestaurante.getText();
         String instruccionesRestaurante = cuadroInstruccionesNuevoRestaurante.getText();
         String direccionRestaurante = cuadroDireccionNuevoRestaurante.getText();
-        Object tipoEstablecimiento = cuadroEstablecimiento.getSelectionModel().getSelectedItem().toString();
-        Object rangoPrecio = cuadroRangoPrecio.getSelectionModel().getSelectedItem().toString();
-        Object tipoCocina = cuadroTipoCocina.getSelectionModel().getSelectedItem().toString();
-        Object tiempoComida = cuadroTiempoComida.getSelectionModel().getSelectedItem().toString();
-        Object restriccionesDieteticas = cuadroRestriccionesDieteticas.getSelectionModel().getSelectedItem().toString();
-        Object buenoPara = cuadroBuenoPara.getSelectionModel().getSelectedItem().toString();
+        Object tipoEstablecimiento = cuadroEstablecimiento.getSelectionModel().getSelectedItem();
+        Object rangoPrecio = cuadroRangoPrecio.getSelectionModel().getSelectedItem();
+        Object tipoCocina = cuadroTipoCocina.getSelectionModel().getSelectedItem();
+        Object tiempoComida = cuadroTiempoComida.getSelectionModel().getSelectedItem();
+        Object restriccionesDieteticas = cuadroRestriccionesDieteticas.getSelectionModel().getSelectedItem();
+        Object buenoPara = cuadroBuenoPara.getSelectionModel().getSelectedItem();
 
         if(nombreRestaurante.equals("")|| paisRestaurante ==null || descripcionRestaurante.equals("") || instruccionesRestaurante.equals("")
                 || direccionRestaurante.equals("") || tipoEstablecimiento==null||rangoPrecio ==null || tipoCocina ==null  || tiempoComida==null
-                || restriccionesDieteticas==null ||buenoPara ==null){
+                || restriccionesDieteticas==null ||buenoPara ==null || ciudadRestaurante ==null){
             ventanaError("Se deben ingresar todos los datos del restaurante");
         }
         else{
             try {
+                String iso3Encontrado = "";
+                String idRangoEncontrado ="";
+                String idEstablecimientoEncontrado = "";
+                String idCiudadEncontrado = "";
 
                 //*****************************************************************************************
-                String buscarCodigoDelPais = "SELECT ISO3 FROM CARGARPAISES  WHERE NOMBRE = ?";
+                if(paisRestaurante.toString().contains("/")){
+                    iso3Encontrado = paisRestaurante.toString().substring(paisRestaurante.toString().indexOf("/")+1,paisRestaurante.toString().length());
 
-                PreparedStatement buscarPaisCodigo = connection.prepareStatement(buscarCodigoDelPais);
+                }
+                else {
+                    String buscarCodigoDelPais = "SELECT ISO3 FROM CARGARPAISES  WHERE NOMBRE = ?";
+                    PreparedStatement codigoPais = connection.prepareStatement(buscarCodigoDelPais);
+                    codigoPais.setString(1, paisRestaurante.toString());
+                    ResultSet codigoPaisBuscado = codigoPais.executeQuery();
 
-                buscarPaisCodigo.setString(1,paisRestaurante.toString());
+                    while (codigoPaisBuscado.next()) {
+                        iso3Encontrado = codigoPaisBuscado.getString("ISO3");
+                    }
+                }
+                //*****************************************************************************************
 
-                ResultSet paisEncontrado = buscarPaisCodigo.executeQuery();
+                String buscarIDRango = "SELECT ID FROM RANGOPRECIO WHERE TIPORANGO =?";
+                PreparedStatement buscarID = connection.prepareStatement(buscarIDRango);
 
-                String nombreIso ="";
+                buscarID.setString(1,rangoPrecio.toString());
+                ResultSet busquedaId = buscarID.executeQuery();
 
-                while(paisEncontrado.next()){
-                    nombreIso=paisEncontrado.getString("ISO3");
+                while(busquedaId.next()){
+                    idRangoEncontrado = String.valueOf(busquedaId.getInt("ID"));
+                }
+                //*****************************************************************************************
+                String buscarEstablecimiento = "SELECT ID FROM ESTABLECIMIENTO WHERE TIPOESTABLECIMIENTO =?";
+                PreparedStatement idEstablecimiento = connection.prepareStatement(buscarEstablecimiento);
+
+                idEstablecimiento.setString(1,tipoEstablecimiento.toString());
+                ResultSet busquedaEstablecimiento = idEstablecimiento.executeQuery();
+
+                while(busquedaEstablecimiento.next()){
+                    idEstablecimientoEncontrado = String.valueOf(busquedaEstablecimiento.getInt("ID"));
+
                 }
 
-                String insertarEnPais = "INSERT INTO PAISES (CODIGO,NOMBRE) VALUES (?,?)";
-                PreparedStatement insercionPais = connection.prepareStatement(insertarEnPais);
-                insercionPais.setString(1,nombreIso);
-                insercionPais.setString(2,paisRestaurante.toString());
-                insercionPais.executeUpdate();
-                //********************************************************************************************
-                String insertarEnRestaurantes = "INSERT INTO RESTAURANTES (ID,NOMBRE,DESCRIPCION.DIRECCION,INSTRUCCIONES,IDCIUDAD,CODIGOPAIS,IDCARACTERISTICAS)" +
-                        "VALUES (?,?,?,?,?,?,?,?)";
-                //*************************************************************************************************************
-                String insertarEnCaracteristicas = "INSERT INTO CARACTERISTICAS (ID,TIPOESTABLECIMIENTO,RANGOPRECIO)" +
-                        "VALUES (?,?,?)";
+                //*****************************************************************************************
 
-                int cuantasCaracteristicas = 0;
-
-                String cantidadCaracteristicas = "SELECT COUNT(*) FROM CARACTERISTICAS";
-
-                PreparedStatement contarTuplesCaracteristicas = connection.prepareStatement(cantidadCaracteristicas);
-                ResultSet cantCaracteristicas = contarTuplesCaracteristicas.executeQuery();
-                while(cantCaracteristicas.next()){
-                    cuantasCaracteristicas=cantCaracteristicas.getInt(1); //Cuantas caracteristicas hay
-                }
-
-                PreparedStatement insercionCaracteristica = connection.prepareStatement(insertarEnCaracteristicas);
-                insercionCaracteristica.setString(1,cuantasCaracteristicas+1+"");
-                insercionCaracteristica.setString(2,tipoEstablecimiento.toString());
-                insercionCaracteristica.setString(3,rangoPrecio.toString());
                 //**************************************************************************************************************
 
-                // TODO INSERTAR EN CIUDADES, FALTA PARSEAR LA CIUDAD ETC ...
+                 if(ciudadRestaurante.toString().contains(",")){
+                    String ciudadTotal = ciudadRestaurante.toString();
+                    ciudadTotal = ciudadTotal.replace(", ",",");
+                    String nombre = ciudadTotal.substring(0,ciudadTotal.indexOf(","));
+                    String provincia = ciudadTotal.substring(ciudadTotal.indexOf(",")+1,ciudadTotal.length());
+
+                    System.out.println("NOMBRE: "+nombre +" PROVINCIA: "+provincia);
+
+
+                    String buscarIDCiudadPorNombreProvincia = "SELECT ID FROM CARGARCIUDADES WHERE NOMBRE = ? AND PROVINCIA = ?";
+                    PreparedStatement buscarIdCiudad = connection.prepareStatement(buscarIDCiudadPorNombreProvincia);
+                    buscarIdCiudad.setString(1,nombre);
+                    buscarIdCiudad.setString(2,provincia);
+                    ResultSet busquedaIdCiudad = buscarIdCiudad.executeQuery();
+
+                    while(busquedaIdCiudad.next()){
+                        idCiudadEncontrado = String.valueOf(busquedaIdCiudad.getInt("ID"));
+                    }
+
+                 }
+                 else{
+                     String buscarIDCiudadPorNombre = "SELECT ID FROM CARGARCIUDADES WHERE NOMBRE = ?";
+                     PreparedStatement buscarCiudadId = connection.prepareStatement(buscarIDCiudadPorNombre);
+                     buscarCiudadId.setString(1,ciudadRestaurante.toString());
+                     ResultSet busquedaIDporNombre = buscarCiudadId.executeQuery();
+
+                     while(busquedaIDporNombre.next()){
+                         idCiudadEncontrado = String.valueOf(busquedaIDporNombre.getInt("ID"));
+                     }
+                 }
+
+                 System.out.println("ISO DEL PAIS: "+iso3Encontrado +" ID de la ciudad: " +idCiudadEncontrado+" ID RANGO: "+idRangoEncontrado +" ID ESTABLECIMIENTO: "+idEstablecimientoEncontrado);
+
+                 String insertarEnRestaurante = "INSERT INTO RESTAURANTES (NOMBRE,DIRECCION,DESCRIPCION,INSTRUCCIONES,IDCIUDAD,IDPAIS,IDRANGOPRECIO,IDESTABLECIMIENTO)" +
+                         "VALUES(?,?,?,?,?,?,?,?)";
+                 PreparedStatement insercionRestaurante = connection.prepareStatement(insertarEnRestaurante,Statement.RETURN_GENERATED_KEYS);
+                 insercionRestaurante.setString(1,nombreRestaurante);
+                 insercionRestaurante.setString(2,direccionRestaurante);
+                 insercionRestaurante.setString(3,descripcionRestaurante);
+                 insercionRestaurante.setString(4,instruccionesRestaurante);
+                 insercionRestaurante.setInt(5, Integer.parseInt(idCiudadEncontrado));
+                 insercionRestaurante.setString(6,iso3Encontrado);
+                 insercionRestaurante.setInt(7,Integer.parseInt(idRangoEncontrado));
+                 insercionRestaurante.setInt(8,Integer.parseInt(idEstablecimientoEncontrado));
+                 insercionRestaurante.executeUpdate();
+                ResultSet ultimoId = insercionRestaurante.getGeneratedKeys();
+
+                 while(ultimoId.next()){
+                     System.out.println("El ultimo ID insertado fue el: "+ultimoId.getLong(1));
+                 }
+
 
                 //***************************************************************************************************************
 
             }catch(SQLException e){
-                e.printStackTrace();
+                ventanaError("El restaurante o la direccion ingresados ya existen. Intente de nuevo");
             }
 
 
