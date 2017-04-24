@@ -955,6 +955,11 @@ public class ControladorVentanaPrincipal implements Initializable {
                 String idRangoEncontrado ="";
                 String idEstablecimientoEncontrado = "";
                 String idCiudadEncontrado = "";
+                String idTiempoComidaEncontrado = "";
+                String idBuenoParaEncontrado ="";
+                String idRestriccionesDieteticasEncontrado = "";
+                String nombreTipoCocinaEncontrado = "";
+                int ultimoIdRestaurante = 0;
 
                 //*****************************************************************************************
                 if(paisRestaurante.toString().contains("/")){
@@ -1030,6 +1035,7 @@ public class ControladorVentanaPrincipal implements Initializable {
                  }
 
                  System.out.println("ISO DEL PAIS: "+iso3Encontrado +" ID de la ciudad: " +idCiudadEncontrado+" ID RANGO: "+idRangoEncontrado +" ID ESTABLECIMIENTO: "+idEstablecimientoEncontrado);
+                 //***************************************************************************************************************************************************************
 
                  String insertarEnRestaurante = "INSERT INTO RESTAURANTES (NOMBRE,DIRECCION,DESCRIPCION,INSTRUCCIONES,IDCIUDAD,IDPAIS,IDRANGOPRECIO,IDESTABLECIMIENTO)" +
                          "VALUES(?,?,?,?,?,?,?,?)";
@@ -1043,12 +1049,70 @@ public class ControladorVentanaPrincipal implements Initializable {
                  insercionRestaurante.setInt(7,Integer.parseInt(idRangoEncontrado));
                  insercionRestaurante.setInt(8,Integer.parseInt(idEstablecimientoEncontrado));
                  insercionRestaurante.executeUpdate();
-                ResultSet ultimoId = insercionRestaurante.getGeneratedKeys();
+
+                 ResultSet ultimoId = insercionRestaurante.getGeneratedKeys();
 
                  while(ultimoId.next()){
-                     System.out.println("El ultimo ID insertado fue el: "+ultimoId.getLong(1));
+                     ultimoIdRestaurante = ultimoId.getInt("ID");
                  }
 
+                String buscarIdBuenoPara = "SELECT ID FROM BUENOPARA WHERE TIPOBUENO = ?";
+                PreparedStatement buscarBuenoPara = connection.prepareStatement(buscarIdBuenoPara);
+                buscarBuenoPara.setString(1,buenoPara.toString());
+                ResultSet busquedaIdBuenoPara = buscarBuenoPara.executeQuery();
+
+                while(busquedaIdBuenoPara.next()){
+                    idBuenoParaEncontrado = String.valueOf(busquedaIdBuenoPara.getInt("ID"));
+                }
+
+                String buscarIdRestricciones = "SELECT ID FROM RESTRICCIONESDIETETICAS WHERE RESTRICCION = ?";
+                PreparedStatement buscarRestriccion = connection.prepareStatement(buscarIdRestricciones);
+                buscarRestriccion.setString(1,restriccionesDieteticas.toString());
+
+                ResultSet busquedaIdRestricciones = buscarRestriccion.executeQuery();
+
+                while(busquedaIdRestricciones.next()){
+                    idRestriccionesDieteticasEncontrado = String.valueOf(busquedaIdRestricciones.getInt("ID"));
+                }
+
+                String buscarIdTiempoComida = "SELECT ID FROM TIEMPOSCOMIDA WHERE TIPOTIEMPO = ?";
+                PreparedStatement buscarTiempoComida = connection.prepareStatement(buscarIdTiempoComida);
+                buscarTiempoComida.setString(1,tiempoComida.toString());
+
+                ResultSet busquedaTiempoComida = buscarTiempoComida.executeQuery();
+
+                while(busquedaTiempoComida.next()){
+                    idTiempoComidaEncontrado = String.valueOf(busquedaTiempoComida.getInt("ID"));
+                }
+
+                String insertarEnTiemposComidaRestaurante = "INSERT INTO TIEMPOSCOMIDARESTAURANTE (IDRESTAURANTE,IDTIEMPOCOMIDA)" +
+                        "VALUES(?,?)" ;
+                String insertarEnRestriccionesRestaurante = "INSERT INTO RESTRICCIONESRESTAURANTE (IDRESTAURANTE,IDRESTRICCIONES)" +
+                        "VALUES(?,?)";
+                String insertarEnTiposCocinaRestaurante = "INSERT INTO TIPOSCOCINARESTAURANTE (IDRESTAURANTE, NOMBRECOCINA)" +
+                        "VALUES (?,?)";
+                String insertarEnBuenoParaRestaurante = "INSERT INTO BUENOPARARESTAURANTE (IDRESTAURANTE, IDBUENOPARA)" +
+                        "VALUES (?,?)";
+
+                PreparedStatement insertarTiemposComidaRestaurante = connection.prepareStatement(insertarEnTiemposComidaRestaurante);
+                insertarTiemposComidaRestaurante.setInt(1,ultimoIdRestaurante);
+                insertarTiemposComidaRestaurante.setInt(2,Integer.parseInt(idTiempoComidaEncontrado));
+                insertarTiemposComidaRestaurante.executeUpdate();
+
+                PreparedStatement insertarRestriccionesRestaurante = connection.prepareStatement(insertarEnRestriccionesRestaurante);
+                insertarRestriccionesRestaurante.setInt(1,ultimoIdRestaurante);
+                insertarRestriccionesRestaurante.setInt(2,Integer.parseInt(idRestriccionesDieteticasEncontrado));
+                insertarRestriccionesRestaurante.executeUpdate();
+
+                PreparedStatement insertarTiposCocinaRestaurante = connection.prepareStatement(insertarEnTiposCocinaRestaurante);
+                insertarTiposCocinaRestaurante.setInt(1,ultimoIdRestaurante);
+                insertarTiposCocinaRestaurante.setString(2,tipoCocina.toString());
+                insertarTiposCocinaRestaurante.executeUpdate();
+
+                PreparedStatement insertarBuenoParaRestaurante = connection.prepareStatement(insertarEnBuenoParaRestaurante);
+                insertarBuenoParaRestaurante.setInt(1,ultimoIdRestaurante);
+                insertarBuenoParaRestaurante.setInt(2,Integer.parseInt(idBuenoParaEncontrado));
+                insertarBuenoParaRestaurante.executeUpdate();
 
                 //***************************************************************************************************************
 
