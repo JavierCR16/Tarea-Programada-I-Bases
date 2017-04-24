@@ -507,5 +507,109 @@
                </children></AnchorPane>
       </content>
     </Tab>
+      <Tab text="Consultas">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <Label layoutX="33.0" layoutY="37.0" text="Consultar Comentarios de un Restaurante">
+                     <font>
+                        <Font name="Baskerville Old Face" size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="33.0" layoutY="91.0" text="Seleccione una ciudad:">
+                     <font>
+                        <Font name="Arial Rounded MT Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="22.0" layoutY="142.0" text="Seleccione un restaurante:">
+                     <font>
+                        <Font name="Arial Rounded MT Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <ComboBox fx:id="cuadroCiudadComentariosRestaurante" layoutX="208.0" layoutY="87.0" prefWidth="150.0" />
+                  <ComboBox layoutX="208.0" layoutY="137.0" prefWidth="150.0" />
+                  <Separator layoutX="374.0" layoutY="59.0" orientation="VERTICAL" prefHeight="454.0" prefWidth="7.0" />
+                  <TableView layoutX="42.0" layoutY="239.0" prefHeight="276.0" prefWidth="311.0">
+                    <columns>
+                      <TableColumn prefWidth="75.0" text="Fecha" />
+                      <TableColumn prefWidth="235.0" text="Comentario" />
+                    </columns>
+                  </TableView>
+                  <Button layoutX="166.0" layoutY="196.0" mnemonicParsing="false" text="Buscar" />
+                  <Button layoutX="464.0" layoutY="196.0" mnemonicParsing="false" text="Lista de amigos" />
+                  <Label layoutX="416.0" layoutY="37.0" text="Amigos de un Colaborador">
+                     <font>
+                        <Font name="Baskerville Old Face" size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="394.0" layoutY="91.0" text="Seleccione un colaborador de la lista:">
+                     <font>
+                        <Font name="Arial Rounded MT Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <Separator layoutX="650.0" layoutY="58.0" orientation="VERTICAL" prefHeight="458.0" prefWidth="5.0" />
+                  <ComboBox layoutX="439.0" layoutY="137.0" prefWidth="150.0" />
+                  <TableView layoutX="414.0" layoutY="251.0" prefHeight="263.0" prefWidth="200.0">
+                    <columns>
+                      <TableColumn prefWidth="199.0" text="Amigos" />
+                    </columns>
+                  </TableView>
+                  <TableView layoutX="676.0" layoutY="251.0" prefHeight="256.0" prefWidth="228.0">
+                    <columns>
+                      <TableColumn prefWidth="227.0" text="Restaurantes" />
+                    </columns>
+                  </TableView>
+                  <TableView layoutX="947.0" layoutY="252.0" prefHeight="254.0" prefWidth="341.0">
+                    <columns>
+                      <TableColumn prefWidth="105.0" text="Bar" />
+                        <TableColumn minWidth="0.0" prefWidth="148.0" text="Recomendado por" />
+                        <TableColumn prefWidth="87.0" text="Valoración" />
+                    </columns>
+                  </TableView>
+                  <Separator layoutX="930.0" layoutY="58.0" orientation="VERTICAL" prefHeight="458.0" prefWidth="0.0" />
+                  <Label layoutX="992.0" layoutY="37.0" text="Bares Recomendados por Amigos">
+                     <font>
+                        <Font name="Baskerville Old Face" size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="680.0" layoutY="39.0" prefHeight="12.0" prefWidth="228.0" text="Restaurantes vegetarianos que">
+                     <font>
+                        <Font name="Baskerville Old Face" size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="669.0" layoutY="61.0" text="ofrecen cena a precio intermedio">
+                     <font>
+                        <Font name="Baskerville Old Face" size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="737.0" layoutY="80.0" prefHeight="11.0" prefWidth="101.0" text="en una ciudad">
+                     <font>
+                        <Font name="Baskerville Old Face" size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="681.0" layoutY="120.0" text="Seleccione la ciudad a consultar:">
+                     <font>
+                        <Font name="Arial Rounded MT Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <ComboBox layoutX="712.0" layoutY="158.0" prefWidth="150.0" />
+                  <Button layoutX="764.0" layoutY="196.0" mnemonicParsing="false" text="Buscar" />
+                  <Button layoutX="1089.0" layoutY="203.0" mnemonicParsing="false" text="Listo" />
+                  <ComboBox layoutX="1130.0" layoutY="158.0" prefWidth="150.0" />
+                  <ComboBox layoutX="1130.0" layoutY="108.0" prefWidth="150.0" />
+                  <Label layoutX="966.0" layoutY="112.0" text="Seleccione una ciudad:">
+                     <font>
+                        <Font name="Arial Rounded MT Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="938.0" layoutY="162.0" text="Seleccione un colaborador:">
+                     <font>
+                        <Font name="Arial Rounded MT Bold" size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+            </AnchorPane>
+        </content>
+      </Tab>
   </tabs>
 </TabPane>
