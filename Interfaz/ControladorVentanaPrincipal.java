@@ -261,11 +261,29 @@ public class ControladorVentanaPrincipal implements Initializable {
     @FXML
     Button agregarComentarioPlatillo;
 
+    @FXML
+    Button botonActualizarEstablecimiento;
+
+    @FXML
+    Button botonActualizarRangoPrecio;
+
+    @FXML
+    Button botonEliminarTiempoComida;
+
+    @FXML
+    Button botonEliminarRestriccionesDieteticas;
+
+    @FXML
+    Button botonEliminarBuenoPara;
+
+    @FXML
+    Button botonEliminarTipoCocina;
+
     Connection connection;
 
     Statement statement;
 
-    String correoColaboradorLogueado ="";
+    String correoColaboradorLogueado = "";
 
     public void initialize(URL fxmlLocations, ResourceBundle resources) {
         establecerConexion();
@@ -280,18 +298,18 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         });
 
-        botonLoguear.setOnAction(event->{
+        botonLoguear.setOnAction(event -> {
             loguearUsuario();
             cuadroIngresarUsuario.clear();
         });
 
-        botonRefrescarColaboradores.setOnAction(event->{
+        botonRefrescarColaboradores.setOnAction(event -> {
             setListaColaboradoresDisponibles();
         });
 
-        cuadroEnviarSolicitudColaboradores.setOnAction(event->{
+        cuadroEnviarSolicitudColaboradores.setOnAction(event -> {
             cuadroEnviarSolicitudColaboradoresCorreo.getItems().removeAll(cuadroEnviarSolicitudColaboradoresCorreo.getItems());
-            if(cuadroEnviarSolicitudColaboradores.getSelectionModel().getSelectedItem()!=null) {
+            if (cuadroEnviarSolicitudColaboradores.getSelectionModel().getSelectedItem() != null) {
                 String nombre = cuadroEnviarSolicitudColaboradores.getSelectionModel().getSelectedItem().toString();
                 List<String> separarNombre = Arrays.asList(nombre.split(" "));
                 String nombreBuscar = "";
@@ -311,7 +329,7 @@ public class ControladorVentanaPrincipal implements Initializable {
                     busquedaCorreo = preparedStament.executeQuery();
 
                     while (busquedaCorreo.next()) {
-                        if(!correoColaboradorLogueado.equals(busquedaCorreo.getString("CORREO")))
+                        if (!correoColaboradorLogueado.equals(busquedaCorreo.getString("CORREO")))
                             cuadroEnviarSolicitudColaboradoresCorreo.getItems().add(busquedaCorreo.getString("CORREO"));
                     }
 
@@ -323,8 +341,8 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         });
 
-        cuadroEnviarSolicitudColaboradoresCorreo.setOnAction(event->{
-            if(cuadroEnviarSolicitudColaboradoresCorreo.getSelectionModel().getSelectedItem()!=null){
+        cuadroEnviarSolicitudColaboradoresCorreo.setOnAction(event -> {
+            if (cuadroEnviarSolicitudColaboradoresCorreo.getSelectionModel().getSelectedItem() != null) {
                 cuadroCorreoAmigo.setText(cuadroEnviarSolicitudColaboradoresCorreo.getSelectionModel().getSelectedItem().toString());
             }
         });
@@ -340,7 +358,7 @@ public class ControladorVentanaPrincipal implements Initializable {
             refrescarSolicitudesAmistad();
         });
 
-        botonAceptarSolicitud.setOnAction(event->{
+        botonAceptarSolicitud.setOnAction(event -> {
             aceptarRechazarSolicitud(true);
             refrescarSolicitudesAmistad();
         });
@@ -350,10 +368,77 @@ public class ControladorVentanaPrincipal implements Initializable {
             refrescarSolicitudesAmistad();
         });
 
-        botonAceptarRestaurante.setOnAction(event ->{
+        botonAceptarRestaurante.setOnAction(event -> {
             agregarRestaurante();
+            limpiarInformacionRestaurante();
 
         });
+
+        botonRefrescarRestaurantesCaracteristicas.setOnAction(event -> {
+            setListaRestaurantesAgregarMas();
+        });
+        agregarMasTipoCocina.setOnAction(event -> {
+            agregarMasTipoCocina();
+            tipoCocinaMas.getSelectionModel().clearSelection();
+        });
+
+        agregarMasBuenoPara.setOnAction(event -> {
+            agregarMasBuenoPara();
+            buenoParaMas.getSelectionModel().clearSelection();
+        });
+
+        agregarMasRestriccionesDieteticas.setOnAction(event -> {
+            agregarMasRestriccionesDieteticas();
+            restriccionesDieteticasMas.getSelectionModel().clearSelection();
+        });
+
+        agregarMasTiempoComida.setOnAction(event -> {
+            agregarMasTiemposComida();
+            tiempoComidaMas.getSelectionModel().clearSelection();
+        });
+
+        botonActualizarRestaurante.setOnAction(event ->{
+            actualizarRestaurante();
+            limpiarActualizarRestaurante();
+            setListaRestaurantesAgregarMas();
+            actualizarTabPlatillos();
+        });
+
+        botonActualizarEstablecimiento.setOnAction(event -> {
+
+            cuadroActualizarEstablecimiento.getSelectionModel().clearSelection();
+        });
+
+        botonActualizarRangoPrecio.setOnAction(event -> {
+
+            cuadroActualizarRangoPrecio.getSelectionModel().clearSelection();
+        });
+
+        botonEliminarTipoCocina.setOnAction(event -> {
+
+            cuadroActualizarTipoCocina.getSelectionModel().clearSelection();
+        });
+
+        botonEliminarBuenoPara.setOnAction(event -> {
+
+            cuadroActualizarBuenoPara.getSelectionModel().clearSelection();
+        });
+
+        botonEliminarRestriccionesDieteticas.setOnAction(event -> {
+
+            cuadroActualizarRestriccionesDieteticas.getSelectionModel().clearSelection();
+        });
+
+        botonEliminarTiempoComida.setOnAction(event -> {
+
+            cuadroActualizarTiempoComida.getSelectionModel().clearSelection();
+        });
+
+        botonRefrescarRestaurantesPlatillos.setOnAction(event -> {
+            actualizarTabPlatillos();
+        });
+
+
 
     }
 
@@ -380,103 +465,95 @@ public class ControladorVentanaPrincipal implements Initializable {
         String usuarioColaborador = cuadroUsuarioNuevoColaborador.getText();
         String residenciaColaborador = cuadroResidenciaNuevoColaborador.getText();
         Object sexoColaborador = cuadroSexoNuevoColaborador.getSelectionModel().getSelectedItem();
-        Object paisColaborador= cuadroPaisNuevoColaborador.getSelectionModel().getSelectedItem();
+        Object paisColaborador = cuadroPaisNuevoColaborador.getSelectionModel().getSelectedItem();
         String sexo = "";
         String pais = "";
 
-        if(sexoColaborador!=null)
-            sexo= sexoColaborador.toString();
-        if(paisColaborador!=null)
+        if (sexoColaborador != null)
+            sexo = sexoColaborador.toString();
+        if (paisColaborador != null)
             pais = paisColaborador.toString();
 
         if (nombreColaborador.equals("") | apellidosColaborador.equals("") | correoColaborador.equals("") | usuarioColaborador.equals(""))
             ventanaError("El nombre, apellidos, correo y usuario son obligatorios.");
 
 
-        else{
-            String apellidoPaterno="";
-            String apellidoMaterno="";
+        else {
+            String apellidoPaterno = "";
+            String apellidoMaterno = "";
             boolean huboError = false;
 
             try {
 
-             apellidoPaterno = apellidosColaborador.substring(0,apellidosColaborador.indexOf(" "));
-             apellidoMaterno = apellidosColaborador.substring(apellidosColaborador.indexOf(" ")+1,apellidosColaborador.length());
+                apellidoPaterno = apellidosColaborador.substring(0, apellidosColaborador.indexOf(" "));
+                apellidoMaterno = apellidosColaborador.substring(apellidosColaborador.indexOf(" ") + 1, apellidosColaborador.length());
 
-            }catch(Exception e){
-                huboError=true;
+            } catch (Exception e) {
+                huboError = true;
                 ventanaError("Debe de Ingresar Ambos Apellidos");
             }
-            if(!huboError) {
-                escribirColaboradorBase(nombreColaborador,apellidoPaterno,apellidoMaterno,correoColaborador,usuarioColaborador,
-                        residenciaColaborador,sexo,pais);
+            if (!huboError) {
+                escribirColaboradorBase(nombreColaborador, apellidoPaterno, apellidoMaterno, correoColaborador, usuarioColaborador,
+                        residenciaColaborador, sexo, pais);
             }
         }
 
     }
 
-    public void escribirColaboradorBase(String nombre,String paterno, String materno, String correo, String usuario,String residencia,String sexo,String pais){
-        String insercionColaborador ="INSERT INTO COLABORADORES" +
+    public void escribirColaboradorBase(String nombre, String paterno, String materno, String correo, String usuario, String residencia, String sexo, String pais) {
+        String insercionColaborador = "INSERT INTO COLABORADORES" +
                 "(CORREO,NOMBREUSUARIO,NOMBRE,APELLIDOPATERNO,APELLIDOMATERNO,PAIS,PROVINCIA,SEXO)" + " VALUES(?,?,?,?,?,?,?,?)";
         //ORDEN : CORREO, USUARIO, NOMBRE, PATERNO, MATERNO, PAIS, PROVINCIA, SEXO
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(insercionColaborador);
-            preparedStatement.setString(1,correo);
-            preparedStatement.setString(2,usuario);
-            preparedStatement.setString(3,nombre);
-            preparedStatement.setString(4,paterno);
-            preparedStatement.setString(5,materno);
+            preparedStatement.setString(1, correo);
+            preparedStatement.setString(2, usuario);
+            preparedStatement.setString(3, nombre);
+            preparedStatement.setString(4, paterno);
+            preparedStatement.setString(5, materno);
 
 
-            if (residencia.equals("") && sexo.equals("") && pais.equals("")){
+            if (residencia.equals("") && sexo.equals("") && pais.equals("")) {
 
                 preparedStatement.setNull(6, Types.VARCHAR);
-                preparedStatement.setNull(7,Types.VARCHAR);
-                preparedStatement.setNull(8,Types.VARCHAR);
+                preparedStatement.setNull(7, Types.VARCHAR);
+                preparedStatement.setNull(8, Types.VARCHAR);
 
-            }
-            else if(residencia.equals("") && sexo.equals("")){
+            } else if (residencia.equals("") && sexo.equals("")) {
                 preparedStatement.setString(6, pais);
-                preparedStatement.setNull(7,Types.VARCHAR);
-                preparedStatement.setNull(8,Types.VARCHAR);
-            }
-            else if(sexo.equals("") && pais.equals("")){
+                preparedStatement.setNull(7, Types.VARCHAR);
+                preparedStatement.setNull(8, Types.VARCHAR);
+            } else if (sexo.equals("") && pais.equals("")) {
 
-                preparedStatement.setNull(6,Types.VARCHAR);
+                preparedStatement.setNull(6, Types.VARCHAR);
                 preparedStatement.setString(7, residencia);
-                preparedStatement.setNull(8,Types.VARCHAR);
-            }
-            else if(residencia.equals("") && pais.equals("")){
-                preparedStatement.setNull(6,Types.VARCHAR);
-                preparedStatement.setNull(7,Types.VARCHAR);
+                preparedStatement.setNull(8, Types.VARCHAR);
+            } else if (residencia.equals("") && pais.equals("")) {
+                preparedStatement.setNull(6, Types.VARCHAR);
+                preparedStatement.setNull(7, Types.VARCHAR);
                 preparedStatement.setString(8, sexo);
 
-            }
-            else if(residencia.equals("")){
-                preparedStatement.setString(6,pais);
-                preparedStatement.setNull(7,Types.VARCHAR);
+            } else if (residencia.equals("")) {
+                preparedStatement.setString(6, pais);
+                preparedStatement.setNull(7, Types.VARCHAR);
                 preparedStatement.setString(8, sexo);
-            }
-            else if(pais.equals("")){
-                preparedStatement.setNull(6,Types.VARCHAR);
-                preparedStatement.setString(7,residencia);
+            } else if (pais.equals("")) {
+                preparedStatement.setNull(6, Types.VARCHAR);
+                preparedStatement.setString(7, residencia);
                 preparedStatement.setString(8, sexo);
-            }
-            else if(sexo.equals("")){
-                preparedStatement.setString(6,pais);
+            } else if (sexo.equals("")) {
+                preparedStatement.setString(6, pais);
                 preparedStatement.setString(7, residencia);
-                preparedStatement.setNull(8,Types.VARCHAR);
-            }
-            else{
-                preparedStatement.setString(6,pais);
+                preparedStatement.setNull(8, Types.VARCHAR);
+            } else {
+                preparedStatement.setString(6, pais);
                 preparedStatement.setString(7, residencia);
-                preparedStatement.setString(8,sexo);
+                preparedStatement.setString(8, sexo);
             }
             preparedStatement.executeUpdate();
             preparedStatement.close();
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
             ventanaError("El Usuario o Correo ingresados ya existen. Intente de nuevo.");
         }
@@ -508,12 +585,12 @@ public class ControladorVentanaPrincipal implements Initializable {
                         " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
         //************************************************************************************************************************************************************
-        String quitarReferenciaCiudades ="ALTER TABLE RESTAURANTES DROP CONSTRAINT FK_RESTAURANTES_CARGARCIUDADES";
+        String quitarReferenciaCiudades = "ALTER TABLE RESTAURANTES DROP CONSTRAINT FK_RESTAURANTES_CARGARCIUDADES";
         String quitarLlavePrimaria = "ALTER TABLE CARGARCIUDADES DROP CONSTRAINT PK_CARGARCIUDADES";
         String quitarID = "ALTER TABLE CARGARCIUDADES DROP COLUMN ID";
         String limpiarTablaCiudades = "TRUNCATE TABLE CARGARCIUDADES";
         String agregarIdIdentity = "ALTER TABLE CARGARCIUDADES ADD  ID INT IDENTITY(1,1)";
-        String hacerLlavePrimaria ="ALTER TABLE CARGARCIUDADES ADD CONSTRAINT PK_CARGARCIUDADES PRIMARY KEY(ID)";
+        String hacerLlavePrimaria = "ALTER TABLE CARGARCIUDADES ADD CONSTRAINT PK_CARGARCIUDADES PRIMARY KEY(ID)";
         String agregarReferenciaCiudades = "ALTER TABLE RESTAURANTES ADD CONSTRAINT FK_RESTAURANTES_CARGARCIUDADES FOREIGN KEY(IDCIUDAD) REFERENCES CARGARCIUDADES(ID)";
 
         String sqlCargaCiudades =
@@ -561,7 +638,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
             ResultSet busquedaCiudades = statement.executeQuery("SELECT NOMBRE FROM CARGARCIUDADES");
 
-            while(busquedaCiudades.next()){
+            while (busquedaCiudades.next()) {
                 arregloCiudades.add(busquedaCiudades.getString("NOMBRE"));
             }
 
@@ -569,15 +646,15 @@ public class ControladorVentanaPrincipal implements Initializable {
                     "  FROM CARGARCIUDADES\n" +
                     "  GROUP BY NOMBRE\n" +
                     "  HAVING COUNT(*) >1");
-            String buscarCiudadesRepetidas  = "SELECT NOMBRE,PROVINCIA FROM CARGARCIUDADES WHERE NOMBRE =?";
+            String buscarCiudadesRepetidas = "SELECT NOMBRE,PROVINCIA FROM CARGARCIUDADES WHERE NOMBRE =?";
 
-            while(repetidosCiudades.next()){
+            while (repetidosCiudades.next()) {
                 arregloCiudades.removeAll(Collections.singleton(repetidosCiudades.getString("NOMBRE")));
                 PreparedStatement extraerCiudadesRepetidas = connection.prepareStatement(buscarCiudadesRepetidas);
-                extraerCiudadesRepetidas.setString(1,repetidosCiudades.getString("NOMBRE"));
+                extraerCiudadesRepetidas.setString(1, repetidosCiudades.getString("NOMBRE"));
                 ResultSet ciudadRepetida = extraerCiudadesRepetidas.executeQuery();
-                while(ciudadRepetida.next()){
-                    arregloCiudades.add(ciudadRepetida.getString("NOMBRE")+", "+ciudadRepetida.getString("PROVINCIA"));
+                while (ciudadRepetida.next()) {
+                    arregloCiudades.add(ciudadRepetida.getString("NOMBRE") + ", " + ciudadRepetida.getString("PROVINCIA"));
                 }
             }
 
@@ -593,46 +670,45 @@ public class ControladorVentanaPrincipal implements Initializable {
                     "  HAVING COUNT(*) >1");
 
             String buscarLosRepetidos = "SELECT NOMBRE,ISO3 FROM CARGARPAISES WHERE NOMBRE =?";
-            while(repetidosPaises.next()) {
+            while (repetidosPaises.next()) {
                 arregloPaises.removeAll(Collections.singleton(repetidosPaises.getString("NOMBRE")));
                 PreparedStatement extraerRepetidos = connection.prepareStatement(buscarLosRepetidos);
-                extraerRepetidos.setString(1,repetidosPaises.getString("NOMBRE"));
+                extraerRepetidos.setString(1, repetidosPaises.getString("NOMBRE"));
                 ResultSet lineasRepetidas = extraerRepetidos.executeQuery();
-                while(lineasRepetidas.next()){
-                    arregloPaises.add(lineasRepetidas.getString("NOMBRE")+"/"+lineasRepetidas.getString("ISO3"));
+                while (lineasRepetidas.next()) {
+                    arregloPaises.add(lineasRepetidas.getString("NOMBRE") + "/" + lineasRepetidas.getString("ISO3"));
                 }
 
             }
 
 
-
             ResultSet busquedaEstablecimientos = statement.executeQuery("SELECT TIPOESTABLECIMIENTO FROM ESTABLECIMIENTO");
 
-            while(busquedaEstablecimientos.next()){
+            while (busquedaEstablecimientos.next()) {
                 arregloEstablecimiento.add(busquedaEstablecimientos.getString("TIPOESTABLECIMIENTO"));
             }
 
             ResultSet busquedaRangos = statement.executeQuery("SELECT TIPORANGO FROM RANGOPRECIO");
 
-            while(busquedaRangos.next()){
+            while (busquedaRangos.next()) {
                 arregloRangoPrecio.add(busquedaRangos.getString("TIPORANGO"));
             }
 
             ResultSet busquedaBuenoPara = statement.executeQuery("SELECT TIPOBUENO FROM BUENOPARA");
 
-            while(busquedaBuenoPara.next()){
+            while (busquedaBuenoPara.next()) {
                 arregloBuenoPara.add(busquedaBuenoPara.getString("TIPOBUENO"));
             }
 
             ResultSet busquedaRestriccionesDieteticas = statement.executeQuery("SELECT RESTRICCION FROM RESTRICCIONESDIETETICAS");
 
-            while(busquedaRestriccionesDieteticas.next()){
+            while (busquedaRestriccionesDieteticas.next()) {
                 arregloRestriccionesDieteticas.add(busquedaRestriccionesDieteticas.getString("RESTRICCION"));
             }
 
             ResultSet busquedaTiemposComida = statement.executeQuery("SELECT TIPOTIEMPO FROM TIEMPOSCOMIDA");
 
-            while(busquedaTiemposComida.next()){
+            while (busquedaTiemposComida.next()) {
                 arregloTiemposComida.add(busquedaTiemposComida.getString("TIPOTIEMPO"));
             }
 
@@ -691,9 +767,9 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     }
 
-    public void ventanaError(String errorDado){
+    public void ventanaError(String errorDado) {
 
-        try{
+        try {
             Stage escenario = new Stage();
 
             FXMLLoader loader = new FXMLLoader();
@@ -703,40 +779,37 @@ public class ControladorVentanaPrincipal implements Initializable {
             escenario.setTitle("Error");
             escenario.setScene(new Scene(root, 456, 184));
             escenario.show();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void loguearUsuario(){
+    public void loguearUsuario() {
 
         String usuarioIngresado = cuadroIngresarUsuario.getText();
         String buscarUsuario = "SELECT NOMBRE,APELLIDOPATERNO,APELLIDOMATERNO,CORREO FROM COLABORADORES WHERE NOMBREUSUARIO=?";
         ResultSet busquedaUsuarioResultado = null;
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(buscarUsuario);
-            preparedStatement.setString(1,usuarioIngresado);
+            preparedStatement.setString(1, usuarioIngresado);
             busquedaUsuarioResultado = preparedStatement.executeQuery();
-            if(!busquedaUsuarioResultado.next()) {
+            if (!busquedaUsuarioResultado.next()) {
                 colaboradorLogueado.setText("Colaborador no existe");
-                correoColaboradorLogueado="";
-            }
-            else {
+                correoColaboradorLogueado = "";
+            } else {
                 colaboradorLogueado.setText(busquedaUsuarioResultado.getString("NOMBRE") + " " +
                         busquedaUsuarioResultado.getString("APELLIDOPATERNO") + " " + busquedaUsuarioResultado.getString("APELLIDOMATERNO"));
                 correoColaboradorLogueado = busquedaUsuarioResultado.getString("CORREO");
                 cuadroCorreoLogueado.setText(correoColaboradorLogueado);
             }
-        }
-
-        catch(SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
 
     }
 
-    public void limpiarInformacionColaboradores(){
+    public void limpiarInformacionColaboradores() {
         cuadroNombreNuevoColaborador.clear();
         cuadroApellidosNuevoColaborador.clear();
         cuadroCorreoNuevoColaborador.clear();
@@ -745,164 +818,159 @@ public class ControladorVentanaPrincipal implements Initializable {
         cuadroSexoNuevoColaborador.getSelectionModel().clearSelection();
     }
 
-    public void setListaColaboradoresDisponibles(){
+    public void setListaColaboradoresDisponibles() {
         String buscarColaboradores = "SELECT  NOMBRE, APELLIDOPATERNO, APELLIDOMATERNO FROM COLABORADORES WHERE CORREO!=?";
         ResultSet busquedaColaboradores = null;
         ArrayList<String> arregloColaboradores = new ArrayList<>();
         ArrayList<String> amigosColaborador = new ArrayList<>();
         ArrayList<String> deQuienAmigosColaborador = new ArrayList<>();
 
-        try{
-            if(!correoColaboradorLogueado.equals("")){
-            PreparedStatement preparedStatement = connection.prepareStatement(buscarColaboradores);
-            preparedStatement.setString(1,correoColaboradorLogueado);
-            busquedaColaboradores= preparedStatement.executeQuery();
-            while(busquedaColaboradores.next()){
-                arregloColaboradores.add(busquedaColaboradores.getString("NOMBRE")+ " " +
-                        busquedaColaboradores.getString("APELLIDOPATERNO")+" "
-                        +busquedaColaboradores.getString("APELLIDOMATERNO"));
-            }
-            ObservableList<String> listaColaboradores = FXCollections.observableArrayList(arregloColaboradores);//EL TOTAL
+        try {
+            if (!correoColaboradorLogueado.equals("")) {
+                PreparedStatement preparedStatement = connection.prepareStatement(buscarColaboradores);
+                preparedStatement.setString(1, correoColaboradorLogueado);
+                busquedaColaboradores = preparedStatement.executeQuery();
+                while (busquedaColaboradores.next()) {
+                    arregloColaboradores.add(busquedaColaboradores.getString("NOMBRE") + " " +
+                            busquedaColaboradores.getString("APELLIDOPATERNO") + " "
+                            + busquedaColaboradores.getString("APELLIDOMATERNO"));
+                }
+                ObservableList<String> listaColaboradores = FXCollections.observableArrayList(arregloColaboradores);//EL TOTAL
 
 
+                String buscarAmigos = "SELECT NOMBRE, APELLIDOPATERNO, APELLIDOMATERNO FROM COLABORADORES,AMIGOS WHERE" +
+                        " CORREO=CORREOAMIGO AND CORREOCOLABORADOR=?";
+                PreparedStatement buscarQuienesSonAmigos = connection.prepareStatement(buscarAmigos);
+                buscarQuienesSonAmigos.setString(1, correoColaboradorLogueado);
+                ResultSet amigosDelColaborador = buscarQuienesSonAmigos.executeQuery();
 
-            String buscarAmigos = "SELECT NOMBRE, APELLIDOPATERNO, APELLIDOMATERNO FROM COLABORADORES,AMIGOS WHERE" +
-                    " CORREO=CORREOAMIGO AND CORREOCOLABORADOR=?";
-            PreparedStatement buscarQuienesSonAmigos = connection.prepareStatement(buscarAmigos);
-            buscarQuienesSonAmigos.setString(1,correoColaboradorLogueado);
-            ResultSet amigosDelColaborador = buscarQuienesSonAmigos.executeQuery();
+                while (amigosDelColaborador.next()) {
+                    amigosColaborador.add(amigosDelColaborador.getString("NOMBRE") + " " +
+                            amigosDelColaborador.getString("APELLIDOPATERNO") + " " +
+                            amigosDelColaborador.getString("APELLIDOMATERNO"));
+                }
 
-            while(amigosDelColaborador.next()){
-                amigosColaborador.add(amigosDelColaborador.getString("NOMBRE")+ " " +
-                        amigosDelColaborador.getString("APELLIDOPATERNO")+" "+
-                        amigosDelColaborador.getString("APELLIDOMATERNO"));
-            }
+                String buscarquienEsAmigoColaborador = "SELECT NOMBRE, APELLIDOPATERNO, APELLIDOMATERNO FROM COLABORADORES,AMIGOS WHERE" +
+                        " CORREO=CORREOCOLABORADOR AND CORREOAMIGO=?";
+                PreparedStatement buscarQuienAmigoColaborador = connection.prepareStatement(buscarquienEsAmigoColaborador);
+                buscarQuienAmigoColaborador.setString(1, correoColaboradorLogueado);
+                ResultSet quienAmigoColaborador = buscarQuienAmigoColaborador.executeQuery();
 
-            String buscarquienEsAmigoColaborador = "SELECT NOMBRE, APELLIDOPATERNO, APELLIDOMATERNO FROM COLABORADORES,AMIGOS WHERE" +
-                    " CORREO=CORREOCOLABORADOR AND CORREOAMIGO=?";
-            PreparedStatement buscarQuienAmigoColaborador = connection.prepareStatement(buscarquienEsAmigoColaborador);
-            buscarQuienAmigoColaborador.setString(1,correoColaboradorLogueado);
-            ResultSet quienAmigoColaborador = buscarQuienAmigoColaborador.executeQuery();
+                while (quienAmigoColaborador.next()) {
+                    deQuienAmigosColaborador.add(quienAmigoColaborador.getString("NOMBRE") + " " +
+                            quienAmigoColaborador.getString("APELLIDOPATERNO") + " " +
+                            quienAmigoColaborador.getString("APELLIDOMATERNO"));
+                }
 
-            while(quienAmigoColaborador.next()){
-                deQuienAmigosColaborador.add(quienAmigoColaborador.getString("NOMBRE")+ " " +
-                        quienAmigoColaborador.getString("APELLIDOPATERNO")+" "+
-                        quienAmigoColaborador.getString("APELLIDOMATERNO"));
-            }
-
-            //cuadroEnviarSolicitudColaboradores.setItems(listaColaboradores);
+                //cuadroEnviarSolicitudColaboradores.setItems(listaColaboradores);
 
                 for (String s : amigosColaborador) {
-                    if(listaColaboradores.contains(s))
+                    if (listaColaboradores.contains(s))
                         listaColaboradores.remove(s);
                 }
                 for (String s : deQuienAmigosColaborador) {
-                    if(listaColaboradores.contains(s))
+                    if (listaColaboradores.contains(s))
                         listaColaboradores.remove(s);
                 }
                 cuadroEnviarSolicitudColaboradores.setItems(listaColaboradores);
 
-            }
-            else{
+            } else {
                 cuadroCorreoLogueado.clear();
                 cuadroCorreoAmigo.clear();
                 cuadroEnviarSolicitudColaboradores.getItems().removeAll(cuadroEnviarSolicitudColaboradores.getItems());
             }
-        }catch(SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void enviarSolicitud(){
+    public void enviarSolicitud() {
         String correoEmisor = cuadroCorreoLogueado.getText();
         String correoReceptor = cuadroCorreoAmigo.getText();
-        String insercionSolicitud ="INSERT INTO SOLICITUDESAMISTAD" +
+        String insercionSolicitud = "INSERT INTO SOLICITUDESAMISTAD" +
                 "(CORREOEMISOR,CORREORECEPTOR)" + " VALUES(?,?)";
 
-        if(correoEmisor.equals("")||correoReceptor.equals("")){
+        if (correoEmisor.equals("") || correoReceptor.equals("")) {
             ventanaError("Se deben proveer los dos correos");
-        }
-        else{
-            try{
+        } else {
+            try {
                 String buscarSolicitudYaEnviada = "SELECT CORREOEMISOR,CORREORECEPTOR FROM SOLICITUDESAMISTAD WHERE CORREOEMISOR=? AND CORREORECEPTOR=?";
-                PreparedStatement statementPreparado= connection.prepareStatement(buscarSolicitudYaEnviada);
-                statementPreparado.setString(1,correoReceptor);
-                statementPreparado.setString(2,correoEmisor);
+                PreparedStatement statementPreparado = connection.prepareStatement(buscarSolicitudYaEnviada);
+                statementPreparado.setString(1, correoReceptor);
+                statementPreparado.setString(2, correoEmisor);
                 ResultSet existeSolicitud = statementPreparado.executeQuery();
 
                 String buscarPorSerRepetido = "SELECT CORREOCOLABORADOR,CORREOAMIGO FROM AMIGOS WHERE CORREOCOLABORADOR =? AND CORREOAMIGO=?";
                 PreparedStatement statementLadoAmigo = connection.prepareStatement(buscarPorSerRepetido);//ESTO POR SI EXISTIERA UN NOMBRE REPETIDO
-                statementLadoAmigo.setString(1,correoEmisor);
-                statementLadoAmigo.setString(2,correoReceptor);
+                statementLadoAmigo.setString(1, correoEmisor);
+                statementLadoAmigo.setString(2, correoReceptor);
                 ResultSet unLadoAmigo = statementLadoAmigo.executeQuery();
 
                 PreparedStatement statementOtroLadoAmigo = connection.prepareStatement(buscarPorSerRepetido);
-                statementOtroLadoAmigo.setString(1,correoReceptor);
-                statementOtroLadoAmigo.setString(2,correoEmisor);
+                statementOtroLadoAmigo.setString(1, correoReceptor);
+                statementOtroLadoAmigo.setString(2, correoEmisor);
                 ResultSet otroLadoAmigo = statementOtroLadoAmigo.executeQuery();
 
-                if(!existeSolicitud.next() & !unLadoAmigo.next()& !otroLadoAmigo.next()) {
+                if (!existeSolicitud.next() & !unLadoAmigo.next() & !otroLadoAmigo.next()) {
                     PreparedStatement preparedStatement = connection.prepareStatement(insercionSolicitud);
                     preparedStatement.setString(1, correoEmisor);
                     preparedStatement.setString(2, correoReceptor);
                     preparedStatement.executeUpdate();
                     preparedStatement.close();
-                }
-                else
+                } else
                     ventanaError("Ya tiene una solicitud de amistad pendiente");
-            }catch(SQLException e){
+            } catch (SQLException e) {
                 ventanaError("Ya se ha enviado la solicitud de amistad");
             }
         }
     }
 
-    public void configurarColumnasTablas(){
-        columnaNombreSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad,String>("nombre"));
-        columnaCorreoSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad,String>("correo"));
+    public void configurarColumnasTablas() {
+        columnaNombreSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad, String>("nombre"));
+        columnaCorreoSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad, String>("correo"));
     }
 
-    public void refrescarSolicitudesAmistad(){
+    public void refrescarSolicitudesAmistad() {
         String buscarSolicitudes = "SELECT NOMBRE,APELLIDOPATERNO,APELLIDOMATERNO,CORREO  FROM COLABORADORES,SOLICITUDESAMISTAD WHERE CORREO=CORREOEMISOR " +
                 "AND CORREORECEPTOR=?";
-        ResultSet busquedaSolicitidudes =null;
+        ResultSet busquedaSolicitidudes = null;
         ArrayList<SolicitudAmistad> arregloSolicitudes = new ArrayList<>();
-        try{
+        try {
             PreparedStatement preparedStatement = connection.prepareStatement(buscarSolicitudes);
-            preparedStatement.setString(1,correoColaboradorLogueado);
+            preparedStatement.setString(1, correoColaboradorLogueado);
             busquedaSolicitidudes = preparedStatement.executeQuery();
 
-            while(busquedaSolicitidudes.next()){
-                String nombre = busquedaSolicitidudes.getString("NOMBRE")+" "+
-                        busquedaSolicitidudes.getString("APELLIDOPATERNO")+" "+
+            while (busquedaSolicitidudes.next()) {
+                String nombre = busquedaSolicitidudes.getString("NOMBRE") + " " +
+                        busquedaSolicitidudes.getString("APELLIDOPATERNO") + " " +
                         busquedaSolicitidudes.getString("APELLIDOMATERNO");
                 String correo = busquedaSolicitidudes.getString("CORREO");
-                arregloSolicitudes.add(new SolicitudAmistad(nombre,correo));
+                arregloSolicitudes.add(new SolicitudAmistad(nombre, correo));
             }
             ObservableList<SolicitudAmistad> informacionSolicitudes = FXCollections.observableArrayList(arregloSolicitudes);
             tablaSolicitudesAmistad.setItems(informacionSolicitudes);
 
-        }catch(SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void aceptarRechazarSolicitud(boolean aceptado){
+    public void aceptarRechazarSolicitud(boolean aceptado) {
         SolicitudAmistad solicitudSeleccionada = (SolicitudAmistad) tablaSolicitudesAmistad.getSelectionModel().getSelectedItem();
-        String agregarAmigo ="INSERT INTO AMIGOS"+"(CORREOCOLABORADOR,CORREOAMIGO,ACEPTADO)"+"VALUES(?,?,?)";
-        if(aceptado){
-            try{
+        String agregarAmigo = "INSERT INTO AMIGOS" + "(CORREOCOLABORADOR,CORREOAMIGO,ACEPTADO)" + "VALUES(?,?,?)";
+        if (aceptado) {
+            try {
                 PreparedStatement insertarAmigo = connection.prepareStatement(agregarAmigo);
-                insertarAmigo.setString(1,correoColaboradorLogueado);
-                insertarAmigo.setString(2,solicitudSeleccionada.getCorreo());
-                insertarAmigo.setString(3,"SI");
+                insertarAmigo.setString(1, correoColaboradorLogueado);
+                insertarAmigo.setString(2, solicitudSeleccionada.getCorreo());
+                insertarAmigo.setString(3, "SI");
 
                 insertarAmigo.executeUpdate();
 
-            }catch(SQLException e){
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }
-        else{
+        } else {
             try {
                 PreparedStatement rechazarAmigo = connection.prepareStatement(agregarAmigo);
                 rechazarAmigo.setString(1, correoColaboradorLogueado);
@@ -911,26 +979,26 @@ public class ControladorVentanaPrincipal implements Initializable {
 
                 rechazarAmigo.executeUpdate();
 
-            }catch(SQLException e){
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
 
-        try{
+        try {
             String eliminarSolicitudesAmistad = "DELETE FROM SOLICITUDESAMISTAD WHERE CORREOEMISOR = ? AND CORREORECEPTOR =?";
             PreparedStatement preparedStatement = connection.prepareStatement(eliminarSolicitudesAmistad);
-            preparedStatement.setString(1,solicitudSeleccionada.getCorreo());
-            preparedStatement.setString(2,correoColaboradorLogueado);
+            preparedStatement.setString(1, solicitudSeleccionada.getCorreo());
+            preparedStatement.setString(2, correoColaboradorLogueado);
             preparedStatement.executeUpdate();
 
-        }catch(SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
 
     }
 
-    public void agregarRestaurante(){
+    public void agregarRestaurante() {
         String nombreRestaurante = cuadroNombreNuevoRestaurante.getText();
         Object paisRestaurante = cuadroPaisNuevoRestaurante.getSelectionModel().getSelectedItem();
         Object ciudadRestaurante = cuadroCiudadNuevoRestaurante.getSelectionModel().getSelectedItem();
@@ -944,29 +1012,27 @@ public class ControladorVentanaPrincipal implements Initializable {
         Object restriccionesDieteticas = cuadroRestriccionesDieteticas.getSelectionModel().getSelectedItem();
         Object buenoPara = cuadroBuenoPara.getSelectionModel().getSelectedItem();
 
-        if(nombreRestaurante.equals("")|| paisRestaurante ==null || descripcionRestaurante.equals("") || instruccionesRestaurante.equals("")
-                || direccionRestaurante.equals("") || tipoEstablecimiento==null||rangoPrecio ==null || tipoCocina ==null  || tiempoComida==null
-                || restriccionesDieteticas==null ||buenoPara ==null || ciudadRestaurante ==null){
+        if (nombreRestaurante.equals("") || paisRestaurante == null || descripcionRestaurante.equals("") || instruccionesRestaurante.equals("")
+                || direccionRestaurante.equals("") || tipoEstablecimiento == null || rangoPrecio == null || tipoCocina == null || tiempoComida == null
+                || restriccionesDieteticas == null || buenoPara == null || ciudadRestaurante == null) {
             ventanaError("Se deben ingresar todos los datos del restaurante");
-        }
-        else{
+        } else {
             try {
                 String iso3Encontrado = "";
-                String idRangoEncontrado ="";
+                String idRangoEncontrado = "";
                 String idEstablecimientoEncontrado = "";
                 String idCiudadEncontrado = "";
                 String idTiempoComidaEncontrado = "";
-                String idBuenoParaEncontrado ="";
+                String idBuenoParaEncontrado = "";
                 String idRestriccionesDieteticasEncontrado = "";
                 String nombreTipoCocinaEncontrado = "";
                 int ultimoIdRestaurante = 0;
 
                 //*****************************************************************************************
-                if(paisRestaurante.toString().contains("/")){
-                    iso3Encontrado = paisRestaurante.toString().substring(paisRestaurante.toString().indexOf("/")+1,paisRestaurante.toString().length());
+                if (paisRestaurante.toString().contains("/")) {
+                    iso3Encontrado = paisRestaurante.toString().substring(paisRestaurante.toString().indexOf("/") + 1, paisRestaurante.toString().length());
 
-                }
-                else {
+                } else {
                     String buscarCodigoDelPais = "SELECT ISO3 FROM CARGARPAISES  WHERE NOMBRE = ?";
                     PreparedStatement codigoPais = connection.prepareStatement(buscarCodigoDelPais);
                     codigoPais.setString(1, paisRestaurante.toString());
@@ -981,20 +1047,20 @@ public class ControladorVentanaPrincipal implements Initializable {
                 String buscarIDRango = "SELECT ID FROM RANGOPRECIO WHERE TIPORANGO =?";
                 PreparedStatement buscarID = connection.prepareStatement(buscarIDRango);
 
-                buscarID.setString(1,rangoPrecio.toString());
+                buscarID.setString(1, rangoPrecio.toString());
                 ResultSet busquedaId = buscarID.executeQuery();
 
-                while(busquedaId.next()){
+                while (busquedaId.next()) {
                     idRangoEncontrado = String.valueOf(busquedaId.getInt("ID"));
                 }
                 //*****************************************************************************************
                 String buscarEstablecimiento = "SELECT ID FROM ESTABLECIMIENTO WHERE TIPOESTABLECIMIENTO =?";
                 PreparedStatement idEstablecimiento = connection.prepareStatement(buscarEstablecimiento);
 
-                idEstablecimiento.setString(1,tipoEstablecimiento.toString());
+                idEstablecimiento.setString(1, tipoEstablecimiento.toString());
                 ResultSet busquedaEstablecimiento = idEstablecimiento.executeQuery();
 
-                while(busquedaEstablecimiento.next()){
+                while (busquedaEstablecimiento.next()) {
                     idEstablecimientoEncontrado = String.valueOf(busquedaEstablecimiento.getInt("ID"));
 
                 }
@@ -1003,90 +1069,90 @@ public class ControladorVentanaPrincipal implements Initializable {
 
                 //**************************************************************************************************************
 
-                 if(ciudadRestaurante.toString().contains(",")){
+                if (ciudadRestaurante.toString().contains(",")) {
                     String ciudadTotal = ciudadRestaurante.toString();
-                    ciudadTotal = ciudadTotal.replace(", ",",");
-                    String nombre = ciudadTotal.substring(0,ciudadTotal.indexOf(","));
-                    String provincia = ciudadTotal.substring(ciudadTotal.indexOf(",")+1,ciudadTotal.length());
+                    ciudadTotal = ciudadTotal.replace(", ", ",");
+                    String nombre = ciudadTotal.substring(0, ciudadTotal.indexOf(","));
+                    String provincia = ciudadTotal.substring(ciudadTotal.indexOf(",") + 1, ciudadTotal.length());
 
-                    System.out.println("NOMBRE: "+nombre +" PROVINCIA: "+provincia);
+                    System.out.println("NOMBRE: " + nombre + " PROVINCIA: " + provincia);
 
 
                     String buscarIDCiudadPorNombreProvincia = "SELECT ID FROM CARGARCIUDADES WHERE NOMBRE = ? AND PROVINCIA = ?";
                     PreparedStatement buscarIdCiudad = connection.prepareStatement(buscarIDCiudadPorNombreProvincia);
-                    buscarIdCiudad.setString(1,nombre);
-                    buscarIdCiudad.setString(2,provincia);
+                    buscarIdCiudad.setString(1, nombre);
+                    buscarIdCiudad.setString(2, provincia);
                     ResultSet busquedaIdCiudad = buscarIdCiudad.executeQuery();
 
-                    while(busquedaIdCiudad.next()){
+                    while (busquedaIdCiudad.next()) {
                         idCiudadEncontrado = String.valueOf(busquedaIdCiudad.getInt("ID"));
                     }
 
-                 }
-                 else{
-                     String buscarIDCiudadPorNombre = "SELECT ID FROM CARGARCIUDADES WHERE NOMBRE = ?";
-                     PreparedStatement buscarCiudadId = connection.prepareStatement(buscarIDCiudadPorNombre);
-                     buscarCiudadId.setString(1,ciudadRestaurante.toString());
-                     ResultSet busquedaIDporNombre = buscarCiudadId.executeQuery();
+                } else {
+                    String buscarIDCiudadPorNombre = "SELECT ID FROM CARGARCIUDADES WHERE NOMBRE = ?";
+                    PreparedStatement buscarCiudadId = connection.prepareStatement(buscarIDCiudadPorNombre);
+                    buscarCiudadId.setString(1, ciudadRestaurante.toString());
+                    ResultSet busquedaIDporNombre = buscarCiudadId.executeQuery();
 
-                     while(busquedaIDporNombre.next()){
-                         idCiudadEncontrado = String.valueOf(busquedaIDporNombre.getInt("ID"));
-                     }
-                 }
+                    while (busquedaIDporNombre.next()) {
+                        idCiudadEncontrado = String.valueOf(busquedaIDporNombre.getInt("ID"));
+                    }
+                }
 
-                 System.out.println("ISO DEL PAIS: "+iso3Encontrado +" ID de la ciudad: " +idCiudadEncontrado+" ID RANGO: "+idRangoEncontrado +" ID ESTABLECIMIENTO: "+idEstablecimientoEncontrado);
-                 //***************************************************************************************************************************************************************
+                System.out.println("ISO DEL PAIS: " + iso3Encontrado + " ID de la ciudad: " + idCiudadEncontrado + " ID RANGO: " + idRangoEncontrado + " ID ESTABLECIMIENTO: " + idEstablecimientoEncontrado);
+                //***************************************************************************************************************************************************************
 
-                 String insertarEnRestaurante = "INSERT INTO RESTAURANTES (NOMBRE,DIRECCION,DESCRIPCION,INSTRUCCIONES,IDCIUDAD,IDPAIS,IDRANGOPRECIO,IDESTABLECIMIENTO)" +
-                         "VALUES(?,?,?,?,?,?,?,?)";
-                 PreparedStatement insercionRestaurante = connection.prepareStatement(insertarEnRestaurante,Statement.RETURN_GENERATED_KEYS);
-                 insercionRestaurante.setString(1,nombreRestaurante);
-                 insercionRestaurante.setString(2,direccionRestaurante);
-                 insercionRestaurante.setString(3,descripcionRestaurante);
-                 insercionRestaurante.setString(4,instruccionesRestaurante);
-                 insercionRestaurante.setInt(5, Integer.parseInt(idCiudadEncontrado));
-                 insercionRestaurante.setString(6,iso3Encontrado);
-                 insercionRestaurante.setInt(7,Integer.parseInt(idRangoEncontrado));
-                 insercionRestaurante.setInt(8,Integer.parseInt(idEstablecimientoEncontrado));
-                 insercionRestaurante.executeUpdate();
+                String insertarEnRestaurante = "INSERT INTO RESTAURANTES (NOMBRE,DIRECCION,DESCRIPCION,INSTRUCCIONES,IDCIUDAD,IDPAIS,IDRANGOPRECIO,IDESTABLECIMIENTO)" +
+                        "VALUES(?,?,?,?,?,?,?,?)";
+                PreparedStatement insercionRestaurante = connection.prepareStatement(insertarEnRestaurante, Statement.RETURN_GENERATED_KEYS);
+                insercionRestaurante.setString(1, nombreRestaurante);
+                insercionRestaurante.setString(2, direccionRestaurante);
+                insercionRestaurante.setString(3, descripcionRestaurante);
+                insercionRestaurante.setString(4, instruccionesRestaurante);
+                insercionRestaurante.setInt(5, Integer.parseInt(idCiudadEncontrado));
+                insercionRestaurante.setString(6, iso3Encontrado);
+                insercionRestaurante.setInt(7, Integer.parseInt(idRangoEncontrado));
+                insercionRestaurante.setInt(8, Integer.parseInt(idEstablecimientoEncontrado));
+                insercionRestaurante.executeUpdate();
 
-                 ResultSet ultimoId = insercionRestaurante.getGeneratedKeys();
+                ResultSet ultimoId = insercionRestaurante.getGeneratedKeys();
 
-                 while(ultimoId.next()){
-                     ultimoIdRestaurante = ultimoId.getInt("ID");
-                 }
+                while (ultimoId.next()) {
+                    ultimoIdRestaurante = ultimoId.getInt(1);
+                    System.out.println("Ultimo id: " + ultimoIdRestaurante);
+                }
 
                 String buscarIdBuenoPara = "SELECT ID FROM BUENOPARA WHERE TIPOBUENO = ?";
                 PreparedStatement buscarBuenoPara = connection.prepareStatement(buscarIdBuenoPara);
-                buscarBuenoPara.setString(1,buenoPara.toString());
+                buscarBuenoPara.setString(1, buenoPara.toString());
                 ResultSet busquedaIdBuenoPara = buscarBuenoPara.executeQuery();
 
-                while(busquedaIdBuenoPara.next()){
+                while (busquedaIdBuenoPara.next()) {
                     idBuenoParaEncontrado = String.valueOf(busquedaIdBuenoPara.getInt("ID"));
                 }
 
                 String buscarIdRestricciones = "SELECT ID FROM RESTRICCIONESDIETETICAS WHERE RESTRICCION = ?";
                 PreparedStatement buscarRestriccion = connection.prepareStatement(buscarIdRestricciones);
-                buscarRestriccion.setString(1,restriccionesDieteticas.toString());
+                buscarRestriccion.setString(1, restriccionesDieteticas.toString());
 
                 ResultSet busquedaIdRestricciones = buscarRestriccion.executeQuery();
 
-                while(busquedaIdRestricciones.next()){
+                while (busquedaIdRestricciones.next()) {
                     idRestriccionesDieteticasEncontrado = String.valueOf(busquedaIdRestricciones.getInt("ID"));
                 }
 
                 String buscarIdTiempoComida = "SELECT ID FROM TIEMPOSCOMIDA WHERE TIPOTIEMPO = ?";
                 PreparedStatement buscarTiempoComida = connection.prepareStatement(buscarIdTiempoComida);
-                buscarTiempoComida.setString(1,tiempoComida.toString());
+                buscarTiempoComida.setString(1, tiempoComida.toString());
 
                 ResultSet busquedaTiempoComida = buscarTiempoComida.executeQuery();
 
-                while(busquedaTiempoComida.next()){
+                while (busquedaTiempoComida.next()) {
                     idTiempoComidaEncontrado = String.valueOf(busquedaTiempoComida.getInt("ID"));
                 }
 
                 String insertarEnTiemposComidaRestaurante = "INSERT INTO TIEMPOSCOMIDARESTAURANTE (IDRESTAURANTE,IDTIEMPOCOMIDA)" +
-                        "VALUES(?,?)" ;
+                        "VALUES(?,?)";
                 String insertarEnRestriccionesRestaurante = "INSERT INTO RESTRICCIONESRESTAURANTE (IDRESTAURANTE,IDRESTRICCIONES)" +
                         "VALUES(?,?)";
                 String insertarEnTiposCocinaRestaurante = "INSERT INTO TIPOSCOCINARESTAURANTE (IDRESTAURANTE, NOMBRECOCINA)" +
@@ -1095,28 +1161,28 @@ public class ControladorVentanaPrincipal implements Initializable {
                         "VALUES (?,?)";
 
                 PreparedStatement insertarTiemposComidaRestaurante = connection.prepareStatement(insertarEnTiemposComidaRestaurante);
-                insertarTiemposComidaRestaurante.setInt(1,ultimoIdRestaurante);
-                insertarTiemposComidaRestaurante.setInt(2,Integer.parseInt(idTiempoComidaEncontrado));
+                insertarTiemposComidaRestaurante.setInt(1, ultimoIdRestaurante);
+                insertarTiemposComidaRestaurante.setInt(2, Integer.parseInt(idTiempoComidaEncontrado));
                 insertarTiemposComidaRestaurante.executeUpdate();
 
                 PreparedStatement insertarRestriccionesRestaurante = connection.prepareStatement(insertarEnRestriccionesRestaurante);
-                insertarRestriccionesRestaurante.setInt(1,ultimoIdRestaurante);
-                insertarRestriccionesRestaurante.setInt(2,Integer.parseInt(idRestriccionesDieteticasEncontrado));
+                insertarRestriccionesRestaurante.setInt(1, ultimoIdRestaurante);
+                insertarRestriccionesRestaurante.setInt(2, Integer.parseInt(idRestriccionesDieteticasEncontrado));
                 insertarRestriccionesRestaurante.executeUpdate();
 
                 PreparedStatement insertarTiposCocinaRestaurante = connection.prepareStatement(insertarEnTiposCocinaRestaurante);
-                insertarTiposCocinaRestaurante.setInt(1,ultimoIdRestaurante);
-                insertarTiposCocinaRestaurante.setString(2,tipoCocina.toString());
+                insertarTiposCocinaRestaurante.setInt(1, ultimoIdRestaurante);
+                insertarTiposCocinaRestaurante.setString(2, tipoCocina.toString());
                 insertarTiposCocinaRestaurante.executeUpdate();
 
                 PreparedStatement insertarBuenoParaRestaurante = connection.prepareStatement(insertarEnBuenoParaRestaurante);
-                insertarBuenoParaRestaurante.setInt(1,ultimoIdRestaurante);
-                insertarBuenoParaRestaurante.setInt(2,Integer.parseInt(idBuenoParaEncontrado));
+                insertarBuenoParaRestaurante.setInt(1, ultimoIdRestaurante);
+                insertarBuenoParaRestaurante.setInt(2, Integer.parseInt(idBuenoParaEncontrado));
                 insertarBuenoParaRestaurante.executeUpdate();
-
                 //***************************************************************************************************************
 
-            }catch(SQLException e){
+            } catch (SQLException e) {
+                e.printStackTrace();
                 ventanaError("El restaurante o la direccion ingresados ya existen. Intente de nuevo");
             }
 
@@ -1124,4 +1190,388 @@ public class ControladorVentanaPrincipal implements Initializable {
         }
     }
 
+    public void setListaRestaurantesAgregarMas() {
+
+        ObservableList<String> listaRestaurantes = restaurantesTotales();
+
+        cuadroRestaurantesDisponiblesCaracteristicas.setItems(listaRestaurantes);
+
+    }
+
+    public void limpiarInformacionRestaurante() {
+
+        cuadroNombreNuevoRestaurante.clear();
+        cuadroDescripcionNuevoRestaurante.clear();
+        cuadroInstruccionesNuevoRestaurante.clear();
+        cuadroDireccionNuevoRestaurante.clear();
+        cuadroPaisNuevoRestaurante.getSelectionModel().clearSelection();
+        cuadroCiudadNuevoRestaurante.getSelectionModel().clearSelection();
+        cuadroRangoPrecio.getSelectionModel().clearSelection();
+        cuadroEstablecimiento.getSelectionModel().clearSelection();
+        cuadroTipoCocina.getSelectionModel().clearSelection();
+        cuadroTiempoComida.getSelectionModel().clearSelection();
+        cuadroRestriccionesDieteticas.getSelectionModel().clearSelection();
+        cuadroBuenoPara.getSelectionModel().clearSelection();
+
+
+    }
+
+    public void agregarMasTipoCocina() {
+        Object restauranteAgregarMas = cuadroRestaurantesDisponiblesCaracteristicas.getSelectionModel().getSelectedItem();
+        Object masTipoCocina = tipoCocinaMas.getSelectionModel().getSelectedItem();
+        int restauranteIDEncontrado = 0;
+
+        if (restauranteAgregarMas == null)
+            ventanaError("Se debe escoger un restaurante");
+        else if (masTipoCocina == null)
+            ventanaError("Se debe escoger un tipo de cocina");
+        else {
+            try {
+                restauranteIDEncontrado = buscarIdRestaurante(restauranteAgregarMas.toString());
+
+                String insertarEnTiposCocinaRestaurante = "INSERT INTO TIPOSCOCINARESTAURANTE (IDRESTAURANTE,NOMBRECOCINA)" +
+                        "VALUES (?,?)";
+
+                PreparedStatement insercionTiposCocina = connection.prepareStatement(insertarEnTiposCocinaRestaurante);
+                insercionTiposCocina.setInt(1, restauranteIDEncontrado);
+                insercionTiposCocina.setString(2, masTipoCocina.toString());
+                insercionTiposCocina.executeUpdate();
+
+            } catch (SQLException e) {
+                ventanaError("El restaurante ya posee: " + masTipoCocina.toString() + " como tipo de cocina");
+            }
+        }
+
+
+    }
+
+    public void agregarMasRestriccionesDieteticas() {
+        Object restauranteAgregarMas = cuadroRestaurantesDisponiblesCaracteristicas.getSelectionModel().getSelectedItem();
+        Object masRestricciones = restriccionesDieteticasMas.getSelectionModel().getSelectedItem();
+        int idRestriccionEncontrado = 0;
+        int idRestauranteEncontrado = 0;
+
+        if (restauranteAgregarMas == null)
+            ventanaError("Se debe escoger un restaurante");
+        else if (masRestricciones == null)
+            ventanaError("Se debe escoger un tipo de restriccion dietetica");
+        else {
+
+            try {
+                idRestauranteEncontrado = buscarIdRestaurante(restauranteAgregarMas.toString());
+                idRestriccionEncontrado = buscarIdRestricciones(masRestricciones.toString());
+
+                String insertarEnRestriccionesRestaurante = "INSERT INTO RESTRICCIONESRESTAURANTE (IDRESTAURANTE,IDRESTRICCIONES)" +
+                        "VALUES (?,?)";
+
+                PreparedStatement insercionRestricciones = connection.prepareStatement(insertarEnRestriccionesRestaurante);
+                insercionRestricciones.setInt(1, idRestauranteEncontrado);
+                insercionRestricciones.setInt(2, idRestriccionEncontrado);
+                insercionRestricciones.executeUpdate();
+
+
+            } catch (SQLException e) {
+                ventanaError("El restaurante ya posee: " + masRestricciones.toString() + " como restriccion dietetica");
+            }
+
+        }
+    }
+
+    public void agregarMasTiemposComida() {
+        Object restauranteAgregarMas = cuadroRestaurantesDisponiblesCaracteristicas.getSelectionModel().getSelectedItem();
+        Object masTiempoComida = tiempoComidaMas.getSelectionModel().getSelectedItem();
+        int idRestauranteEncontrado = 0;
+        int idTiempoComidaEncontrado = 0;
+
+        if (restauranteAgregarMas == null)
+            ventanaError("Se debe escoger un restaurante");
+        else if (masTiempoComida == null)
+            ventanaError("Se debe escoger un tiempo de comida");
+        else {
+            try{
+                idRestauranteEncontrado = buscarIdRestaurante(restauranteAgregarMas.toString());
+                idTiempoComidaEncontrado = buscarIdTiempoComida(masTiempoComida.toString());
+
+                String insertarEnTiemposComidaRestaurante = "INSERT INTO TIEMPOSCOMIDARESTAURANTE (IDRESTAURANTE,IDTIEMPOCOMIDA)" +
+                        "VALUES(?,?)";
+                PreparedStatement insercionTiempoComida = connection.prepareStatement(insertarEnTiemposComidaRestaurante);
+                insercionTiempoComida.setInt(1,idRestauranteEncontrado);
+                insercionTiempoComida.setInt(2,idTiempoComidaEncontrado);
+                insercionTiempoComida.executeUpdate();
+
+            }
+            catch(SQLException e){
+                ventanaError("El restaurante ya posee: " + masTiempoComida.toString() + " como tiempo de comida");
+            }
+        }
+    }
+
+    public void agregarMasBuenoPara() {
+        Object restauranteAgregarMas = cuadroRestaurantesDisponiblesCaracteristicas.getSelectionModel().getSelectedItem();
+        Object masBuenoPara = buenoParaMas.getSelectionModel().getSelectedItem();
+        int idRestauranteEncontrado = 0;
+        int idBuenoParaEncontrado = 0;
+
+        if (restauranteAgregarMas == null)
+            ventanaError("Se debe escoger un restaurante");
+        else if (masBuenoPara == null)
+            ventanaError("Se debe escoger un tipo de ocasion");
+        else{
+            try {
+                idRestauranteEncontrado = buscarIdRestaurante(restauranteAgregarMas.toString());
+                idBuenoParaEncontrado = buscarIdBuenoPara(masBuenoPara.toString());
+
+                String insertarEnBuenoParaRestaurante = "INSERT INTO BUENOPARARESTAURANTE (IDRESTAURANTE,IDBUENOPARA)" +
+                        "VALUES(?,?)";
+                PreparedStatement insercionBuenoPara = connection.prepareStatement(insertarEnBuenoParaRestaurante);
+                insercionBuenoPara.setInt(1,idRestauranteEncontrado);
+                insercionBuenoPara.setInt(2,idBuenoParaEncontrado);
+                insercionBuenoPara.executeUpdate();
+            }
+            catch(SQLException e){
+                ventanaError("El restaurante ya posee: " + masBuenoPara.toString() + " como ocasion");
+            }
+        }
+    }
+
+    public int buscarIdRestaurante(String nombre) {
+        int idRestauranteEncontrado = 0;
+        try {
+            String buscarIdRestaurante = "SELECT ID FROM RESTAURANTES  WHERE NOMBRE = ?";
+            PreparedStatement buscarRestaurante = connection.prepareStatement(buscarIdRestaurante);
+            buscarRestaurante.setString(1, nombre);
+            ResultSet busquedaIdRestaurante = buscarRestaurante.executeQuery();
+
+            while (busquedaIdRestaurante.next()) {
+                idRestauranteEncontrado = busquedaIdRestaurante.getInt("ID");
+            }
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return idRestauranteEncontrado;
+    }
+
+    public int buscarIdRestricciones(String nombre){
+
+        int idRestriccionEncontrado= 0;
+        try {
+            String buscarIdRestriccion = "SELECT ID FROM RESTRICCIONESDIETETICAS WHERE RESTRICCION = ?";
+            PreparedStatement buscarRestriccion = connection.prepareStatement(buscarIdRestriccion);
+            buscarRestriccion.setString(1, nombre);
+            ResultSet idRestriccion = buscarRestriccion.executeQuery();
+
+            while (idRestriccion.next()) {
+                idRestriccionEncontrado = idRestriccion.getInt("ID");
+            }
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return idRestriccionEncontrado;
+    }
+
+    public int buscarIdTiempoComida(String nombre){
+        int idEncontrado = 0;
+
+        try{
+            String buscarId = "SELECT ID FROM TIEMPOSCOMIDA WHERE TIPOTIEMPO = ?";
+            PreparedStatement busquedaTiempoComida = connection.prepareStatement(buscarId);
+            busquedaTiempoComida.setString(1,nombre);
+            ResultSet busquedaId = busquedaTiempoComida.executeQuery();
+
+            while(busquedaId.next()){
+                idEncontrado = busquedaId.getInt("ID");
+            }
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return idEncontrado;
+    }
+
+    public int buscarIdBuenoPara(String nombre){
+        int idBuenoPara = 0;
+
+        try{
+            String buscarId = "SELECT ID FROM BUENOPARA WHERE TIPOBUENO = ?";
+            PreparedStatement busquedaBuenoPara = connection.prepareStatement(buscarId);
+            busquedaBuenoPara.setString(1,nombre);
+            ResultSet busquedaId = busquedaBuenoPara.executeQuery();
+
+            while(busquedaId.next()){
+                idBuenoPara = busquedaId.getInt("ID");
+            }
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return idBuenoPara;
+
+    }
+
+    public int buscarIdCiudad(String nombre){
+        int idEncontrado = 0;
+        try{
+            if (nombre.contains(",")) {
+
+                nombre = nombre.replace(", ", ",");
+                String nombreCiudad = nombre.substring(0, nombre.indexOf(","));
+                String provincia = nombre.substring(nombre.indexOf(",") + 1, nombre.length());
+
+                String buscarIDCiudadPorNombreProvincia = "SELECT ID FROM CARGARCIUDADES WHERE NOMBRE = ? AND PROVINCIA = ?";
+                PreparedStatement buscarIdCiudad = connection.prepareStatement(buscarIDCiudadPorNombreProvincia);
+                buscarIdCiudad.setString(1, nombreCiudad);
+                buscarIdCiudad.setString(2, provincia);
+                ResultSet busquedaIdCiudad = buscarIdCiudad.executeQuery();
+
+                while (busquedaIdCiudad.next()) {
+                    idEncontrado = busquedaIdCiudad.getInt("ID");
+                }
+
+            }
+            else{
+                String buscarIDCiudadPorNombre = "SELECT ID FROM CARGARCIUDADES WHERE NOMBRE = ?";
+                PreparedStatement buscarCiudadId = connection.prepareStatement(buscarIDCiudadPorNombre);
+                buscarCiudadId.setString(1, nombre);
+                ResultSet busquedaIDporNombre = buscarCiudadId.executeQuery();
+
+                while (busquedaIDporNombre.next()) {
+                    idEncontrado = busquedaIDporNombre.getInt("ID");
+                }
+            }
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return idEncontrado;
+
+    }
+
+    public int buscarIdEstablecimiento(String nombre){
+        int idEncontrado = 0;
+        try{
+            String buscarEstablecimiento = "SELECT ID FROM ESTABLECIMIENTO WHERE TIPOESTABLECIMIENTO = ?";
+            PreparedStatement buscarId = connection.prepareStatement(buscarEstablecimiento);
+            buscarId.setString(1,nombre);
+            ResultSet busquedaId = buscarId.executeQuery();
+            while(busquedaId.next()){
+                idEncontrado = busquedaId.getInt("ID");
+            }
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return idEncontrado;
+    }
+
+    public int buscarIdRangoPrecio(String nombre){
+        int idEncontrado = 0;
+        try{
+            String buscarRangoPrecio = "SELECT ID FROM RANGOPRECIO WHERE TIPORANGO = ?";
+            PreparedStatement buscarId = connection.prepareStatement(buscarRangoPrecio);
+            buscarId.setString(1,nombre);
+            ResultSet busquedaId = buscarId.executeQuery();
+            while(busquedaId.next()){
+                idEncontrado = busquedaId.getInt("ID");
+            }
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return idEncontrado;
+    }
+
+    public void actualizarRestaurante(){
+        try {
+            if (cuadroActualizarRestaurantes.getSelectionModel().getSelectedItem() != null) {
+                String restaurantePorActualizar = cuadroActualizarRestaurantes.getSelectionModel().getSelectedItem().toString();
+                if (!cuadroActualizarNombreRestaurante.getText().equals("")) {
+                    String nombreAUsar = cuadroActualizarNombreRestaurante.getText();
+                    String actualizarNombre = "UPDATE RESTAURANTES SET NOMBRE =? WHERE NOMBRE =?";
+                    PreparedStatement actualizarNombreRestaurante = connection.prepareStatement(actualizarNombre);
+                    actualizarNombreRestaurante.setString(1,nombreAUsar);
+                    actualizarNombreRestaurante.setString(2,restaurantePorActualizar);
+                    actualizarNombreRestaurante.executeUpdate();
+                }
+
+                if (cuadroActualizarCiudadRestaurante.getSelectionModel().getSelectedItem() != null) {
+                    String ciudadNueva = cuadroActualizarCiudadRestaurante.getSelectionModel().getSelectedItem().toString();
+                    int idCiudadActualizar = buscarIdCiudad(ciudadNueva);
+                }
+
+                if (cuadroActualizarPaisRestaurante.getSelectionModel().getSelectedItem() != null) {
+
+                }
+
+                if (!cuadroActualizarDescripcionRestaurante.getText().equals("")) {
+
+                }
+
+                if (!cuadroActualizarInstruccionesRestaurante.getText().equals("")) {
+
+                }
+
+                if (!cuadroActualizarDireccionRestaurante.getText().equals("")) {
+
+                }
+            } else {
+                ventanaError("Se debe seleccionar un restaurante");
+            }
+        }
+        catch(SQLException e){
+            ventanaError("Hubo un error al actualizar la informacion. Intente de nuevo");
+        }
+
+    }
+
+    public ObservableList<String> restaurantesTotales(){
+        ArrayList<String> restaurantesEncontrados = new ArrayList<>();
+        try {
+            String buscarRestaurantes = "SELECT NOMBRE FROM RESTAURANTES";
+
+            ResultSet busquedaRestaurantes = statement.executeQuery(buscarRestaurantes);
+
+            while (busquedaRestaurantes.next()) {
+                restaurantesEncontrados.add(busquedaRestaurantes.getString("NOMBRE"));
+            }
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        ObservableList<String> listaRestaurantes = FXCollections.observableArrayList(restaurantesEncontrados);
+        return listaRestaurantes;
+    }
+
+    public void limpiarActualizarRestaurante(){
+        cuadroActualizarNombreRestaurante.clear();
+        cuadroActualizarCiudadRestaurante.getSelectionModel().clearSelection();
+        cuadroActualizarPaisRestaurante.getSelectionModel().clearSelection();
+        cuadroActualizarDescripcionRestaurante.clear();
+        cuadroActualizarInstruccionesRestaurante.clear();
+        cuadroActualizarDireccionRestaurante.clear();
+        cuadroActualizarEstablecimiento.getSelectionModel().clearSelection();
+        cuadroActualizarRangoPrecio.getSelectionModel().clearSelection();
+        cuadroActualizarTipoCocina.getSelectionModel().clearSelection();
+        cuadroActualizarBuenoPara.getSelectionModel().clearSelection();
+        cuadroActualizarRestriccionesDieteticas.getSelectionModel().clearSelection();
+        cuadroActualizarTiempoComida.getSelectionModel().clearSelection();
+    }
+
+    public void actualizarTabPlatillos(){
+
+        ObservableList<String> listaRestaurantes = restaurantesTotales();
+
+        cuadroActualizarRestaurantes.setItems(listaRestaurantes);
+        cuadroRestaurantesPlatillos.setItems(listaRestaurantes);
+        cuadroRestauranteEliminarPlatillo.setItems(listaRestaurantes);
+        }
 }
