@@ -1451,6 +1451,29 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     }
 
+    public String buscarIsoPais(String nombre){
+        String iso3Encontrado = "";
+        try {
+            if (nombre.contains("/")) {
+                iso3Encontrado = nombre.substring(nombre.indexOf("/") + 1, nombre.length());
+
+            } else {
+                String buscarCodigoDelPais = "SELECT ISO3 FROM CARGARPAISES  WHERE NOMBRE = ?";
+                PreparedStatement codigoPais = connection.prepareStatement(buscarCodigoDelPais);
+                codigoPais.setString(1, nombre);
+                ResultSet codigoPaisBuscado = codigoPais.executeQuery();
+
+                while (codigoPaisBuscado.next()) {
+                    iso3Encontrado = codigoPaisBuscado.getString("ISO3");
+                }
+            }
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return iso3Encontrado;
+    }
+
     public int buscarIdEstablecimiento(String nombre){
         int idEncontrado = 0;
         try{
@@ -1505,22 +1528,51 @@ public class ControladorVentanaPrincipal implements Initializable {
                 if (cuadroActualizarCiudadRestaurante.getSelectionModel().getSelectedItem() != null) {
                     String ciudadNueva = cuadroActualizarCiudadRestaurante.getSelectionModel().getSelectedItem().toString();
                     int idCiudadActualizar = buscarIdCiudad(ciudadNueva);
+                    String actualizarCiudad = "UPDATE RESTAURANTES SET IDCIUDAD =? WHERE NOMBRE = ?";
+                    PreparedStatement actualizarCiudadRestaurante = connection.prepareStatement(actualizarCiudad);
+                    actualizarCiudadRestaurante.setInt(1,idCiudadActualizar);
+                    actualizarCiudadRestaurante.setString(2,restaurantePorActualizar);
+                    actualizarCiudadRestaurante.executeUpdate();
+
                 }
 
                 if (cuadroActualizarPaisRestaurante.getSelectionModel().getSelectedItem() != null) {
-
+                    String paisNuevo = cuadroActualizarPaisRestaurante.getSelectionModel().getSelectedItem().toString();
+                    String isoPaisNuevo =  buscarIsoPais(paisNuevo);
+                    String actualizarPais = "UPDATE RESTAURANTES SET IDPAIS =? WHERE NOMBRE =?";
+                    PreparedStatement actualizarPaisRestaurante = connection.prepareStatement(actualizarPais);
+                    actualizarPaisRestaurante.setString(1,isoPaisNuevo);
+                    actualizarPaisRestaurante.setString(2,restaurantePorActualizar);
+                    actualizarPaisRestaurante.executeUpdate();
                 }
 
                 if (!cuadroActualizarDescripcionRestaurante.getText().equals("")) {
-
+                    String descripcionNueva = cuadroActualizarDescripcionRestaurante.getText();
+                    String actualizarDescripcion = "UPDATE RESTAURANTES SET DESCRIPCION =? WHERE NOMBRE =?";
+                    PreparedStatement actualizarDescripcionRestaurante = connection.prepareStatement(actualizarDescripcion);
+                    actualizarDescripcionRestaurante.setString(1,descripcionNueva);
+                    actualizarDescripcionRestaurante.setString(2,restaurantePorActualizar);
+                    actualizarDescripcionRestaurante.executeUpdate();
                 }
 
                 if (!cuadroActualizarInstruccionesRestaurante.getText().equals("")) {
 
+                    String instruccionNueva = cuadroActualizarInstruccionesRestaurante.getText();
+                    String actualizarInstruccion = "UPDATE RESTAURANTES SET INSTRUCCIONES =? WHERE NOMBRE =?";
+                    PreparedStatement actualizarInstruccionRestaurante = connection.prepareStatement(actualizarInstruccion);
+                    actualizarInstruccionRestaurante.setString(1,instruccionNueva);
+                    actualizarInstruccionRestaurante.setString(2,restaurantePorActualizar);
+                    actualizarInstruccionRestaurante.executeUpdate();
+
                 }
 
                 if (!cuadroActualizarDireccionRestaurante.getText().equals("")) {
-
+                    String direccionNueva = cuadroActualizarDireccionRestaurante.getText();
+                    String actualizarDireccion = "UPDATE RESTAURANTES SET DIRECCION =? WHERE NOMBRE =?";
+                    PreparedStatement actualizarDireccionRestaurante = connection.prepareStatement(actualizarDireccion);
+                    actualizarDireccionRestaurante.setString(1,direccionNueva);
+                    actualizarDireccionRestaurante.setString(2,restaurantePorActualizar);
+                    actualizarDireccionRestaurante.executeUpdate();
                 }
             } else {
                 ventanaError("Se debe seleccionar un restaurante");
