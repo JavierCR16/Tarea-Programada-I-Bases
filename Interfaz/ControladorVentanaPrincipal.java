@@ -405,32 +405,32 @@ public class ControladorVentanaPrincipal implements Initializable {
         });
 
         botonActualizarEstablecimiento.setOnAction(event -> {
-
+            actualizarEstablecimiento();
             cuadroActualizarEstablecimiento.getSelectionModel().clearSelection();
         });
 
         botonActualizarRangoPrecio.setOnAction(event -> {
-
+            actualizarRangoPrecio();
             cuadroActualizarRangoPrecio.getSelectionModel().clearSelection();
         });
 
         botonEliminarTipoCocina.setOnAction(event -> {
-
+            eliminarTipoCocina();
             cuadroActualizarTipoCocina.getSelectionModel().clearSelection();
         });
 
         botonEliminarBuenoPara.setOnAction(event -> {
-
+            eliminarBuenoPara();
             cuadroActualizarBuenoPara.getSelectionModel().clearSelection();
         });
 
         botonEliminarRestriccionesDieteticas.setOnAction(event -> {
-
+            eliminarRestriccionDietetica();
             cuadroActualizarRestriccionesDieteticas.getSelectionModel().clearSelection();
         });
 
         botonEliminarTiempoComida.setOnAction(event -> {
-
+            eliminarTiempoComida();
             cuadroActualizarTiempoComida.getSelectionModel().clearSelection();
         });
 
@@ -1626,4 +1626,160 @@ public class ControladorVentanaPrincipal implements Initializable {
         cuadroRestaurantesPlatillos.setItems(listaRestaurantes);
         cuadroRestauranteEliminarPlatillo.setItems(listaRestaurantes);
         }
+
+    public void actualizarEstablecimiento(){
+
+        Object nombreRestaurante = cuadroRestaurantesPlatillos.getSelectionModel().getSelectedItem();
+        Object establecimientoNuevo = cuadroActualizarEstablecimiento.getSelectionModel().getSelectedItem();
+
+        if(nombreRestaurante == null || establecimientoNuevo ==null)
+            ventanaError("Se debe escoger un restaurante y un establecimiento");
+        else{
+
+            try{
+                int idBuscarEstablecimientoNuevo = buscarIdEstablecimiento(establecimientoNuevo.toString());
+                String actualizarEstablecimiento = "UPDATE RESTAURANTES SET IDESTABLECIMIENTO = ? WHERE NOMBRE =?";
+                PreparedStatement actualizarEstablecimientoRestaurante = connection.prepareStatement(actualizarEstablecimiento);
+
+                actualizarEstablecimientoRestaurante.setInt(1,idBuscarEstablecimientoNuevo);
+                actualizarEstablecimientoRestaurante.setString(2,nombreRestaurante.toString());
+                actualizarEstablecimientoRestaurante.executeUpdate();
+            }
+            catch(SQLException e){
+                ventanaError("Hubo un error al actualizar la informacion. Intente de nuevo");
+            }
+
+        }
+
+    }
+
+    public void actualizarRangoPrecio(){
+        Object nombreRestaurante = cuadroRestaurantesPlatillos.getSelectionModel().getSelectedItem();
+        Object rangoPrecioNuevo = cuadroActualizarRangoPrecio.getSelectionModel().getSelectedItem();
+
+        if(nombreRestaurante == null || rangoPrecioNuevo ==null)
+            ventanaError("Se debe escoger un restaurante y un rango de precio");
+        else{
+            try{
+                int idBuscarRangoPrecioNuevo = buscarIdRangoPrecio(rangoPrecioNuevo.toString());
+                String actualizarRangoPrecio = "UPDATE RESTAURANTES SET IDRANGOPRECIO = ? WHERE NOMBRE =?";
+                PreparedStatement actualizarRangoPrecioRestaurante = connection.prepareStatement(actualizarRangoPrecio);
+
+                actualizarRangoPrecioRestaurante.setInt(1,idBuscarRangoPrecioNuevo);
+                actualizarRangoPrecioRestaurante.setString(2,nombreRestaurante.toString());
+                actualizarRangoPrecioRestaurante.executeUpdate();
+            }
+            catch(SQLException e){
+                ventanaError("Hubo un error al actualizar la informacion. Intente de nuevo");
+            }
+
+        }
+    }
+
+    public void eliminarTipoCocina(){
+
+        Object nombreRestaurante = cuadroActualizarRestaurantes.getSelectionModel().getSelectedItem();
+        Object eliminarTipoCocina = cuadroActualizarTipoCocina.getSelectionModel().getSelectedItem();
+
+        if(nombreRestaurante ==null || eliminarTipoCocina ==null)
+            ventanaError("Se debe escoger un restaurante y un tipo de cocina");
+        else{
+            try{
+                int idRestaurante = buscarIdRestaurante(nombreRestaurante.toString());
+
+                String eliminarTipoCocinaRestaurante = "DELETE FROM TIPOSCOCINARESTAURANTE WHERE IDRESTAURANTE = ? AND NOMBRECOCINA =?";
+                PreparedStatement procesoEliminarTipoCocina = connection.prepareStatement(eliminarTipoCocinaRestaurante);
+                procesoEliminarTipoCocina.setInt(1,idRestaurante);
+                procesoEliminarTipoCocina.setString(2,eliminarTipoCocina.toString());
+                procesoEliminarTipoCocina.executeUpdate();
+
+            }
+            catch(SQLException e){
+                ventanaError("Hubo un error al actualizar la informacion. Intente de nuevo");
+            }
+
+        }
+    }
+
+    public void eliminarRestriccionDietetica() {
+
+        Object nombreRestaurante = cuadroActualizarRestaurantes.getSelectionModel().getSelectedItem();
+        Object eliminarRestriccionDietetica = cuadroActualizarRestriccionesDieteticas.getSelectionModel().getSelectedItem();
+
+        if (nombreRestaurante == null || eliminarRestriccionDietetica == null)
+            ventanaError("Se debe escoger un restaurante y una restriccion dietetica");
+        else {
+            try {
+                int idRestaurante = buscarIdRestaurante(nombreRestaurante.toString());
+                int idRestriccion = buscarIdRestricciones(eliminarRestriccionDietetica.toString());
+
+                String eliminarRestriccionDieteticaRestaurante = "DELETE FROM RESTRICCIONESRESTAURANTE WHERE IDRESTAURANTE = ? AND IDRESTRICCIONES =?";
+                PreparedStatement procesoEliminarRestriccion = connection.prepareStatement(eliminarRestriccionDieteticaRestaurante);
+                procesoEliminarRestriccion.setInt(1, idRestaurante);
+                procesoEliminarRestriccion.setInt(2, idRestriccion);
+                procesoEliminarRestriccion.executeUpdate();
+
+            } catch (SQLException e) {
+                ventanaError("Hubo un error al actualizar la informacion. Intente de nuevo");
+            }
+
+        }
+    }
+
+    public void eliminarTiempoComida(){
+
+        Object nombreRestaurante = cuadroActualizarRestaurantes.getSelectionModel().getSelectedItem();
+        Object eliminarTiempoComida = cuadroActualizarTiempoComida.getSelectionModel().getSelectedItem();
+
+        if(nombreRestaurante ==null || eliminarTiempoComida ==null)
+            ventanaError("Se debe escoger un restaurante y un tiempo de comida");
+        else{
+            try{
+                int idRestaurante = buscarIdRestaurante(nombreRestaurante.toString());
+                int idTiempoComida = buscarIdTiempoComida(eliminarTiempoComida.toString());
+
+                String eliminarTiempoComidaRestaurante = "DELETE FROM TIEMPOSCOMIDARESTAURANTE WHERE IDRESTAURANTE = ? AND IDTIEMPOCOMIDA=?";
+                PreparedStatement procesoEliminarTiempoComida = connection.prepareStatement(eliminarTiempoComidaRestaurante);
+                procesoEliminarTiempoComida.setInt(1,idRestaurante);
+                procesoEliminarTiempoComida.setInt(2,idTiempoComida);
+                procesoEliminarTiempoComida.executeUpdate();
+
+            }
+            catch(SQLException e){
+                ventanaError("Hubo un error al actualizar la informacion. Intente de nuevo");
+            }
+
+        }
+
+
+    }
+
+    public void eliminarBuenoPara(){
+
+        Object nombreRestaurante = cuadroActualizarRestaurantes.getSelectionModel().getSelectedItem();
+        Object eliminarBuenoPara = cuadroActualizarBuenoPara.getSelectionModel().getSelectedItem();
+
+        if(nombreRestaurante ==null || eliminarBuenoPara ==null)
+            ventanaError("Se debe escoger un restaurante y un tipo de ocasion");
+        else{
+            try{
+                int idRestaurante = buscarIdRestaurante(nombreRestaurante.toString());
+                int idBuenoPara = buscarIdBuenoPara(eliminarBuenoPara.toString());
+
+                String eliminarBuenoParaRestaurante = "DELETE FROM BUENOPARARESTAURANTE WHERE IDRESTAURANTE = ? AND IDBUENOPARA =?";
+                PreparedStatement procesoEliminarBuenoPara = connection.prepareStatement(eliminarBuenoParaRestaurante);
+                procesoEliminarBuenoPara.setInt(1,idRestaurante);
+                procesoEliminarBuenoPara.setInt(2,idBuenoPara);
+                procesoEliminarBuenoPara.executeUpdate();
+
+            }
+            catch(SQLException e){
+                ventanaError("Hubo un error al actualizar la informacion. Intente de nuevo");
+            }
+
+        }
+    }
+
+
+
 }
