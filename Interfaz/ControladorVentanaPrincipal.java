@@ -1516,14 +1516,7 @@ public class ControladorVentanaPrincipal implements Initializable {
         try {
             if (cuadroActualizarRestaurantes.getSelectionModel().getSelectedItem() != null) {
                 String restaurantePorActualizar = cuadroActualizarRestaurantes.getSelectionModel().getSelectedItem().toString();
-                if (!cuadroActualizarNombreRestaurante.getText().equals("")) {
-                    String nombreAUsar = cuadroActualizarNombreRestaurante.getText();
-                    String actualizarNombre = "UPDATE RESTAURANTES SET NOMBRE =? WHERE NOMBRE =?";
-                    PreparedStatement actualizarNombreRestaurante = connection.prepareStatement(actualizarNombre);
-                    actualizarNombreRestaurante.setString(1,nombreAUsar);
-                    actualizarNombreRestaurante.setString(2,restaurantePorActualizar);
-                    actualizarNombreRestaurante.executeUpdate();
-                }
+
 
                 if (cuadroActualizarCiudadRestaurante.getSelectionModel().getSelectedItem() != null) {
                     String ciudadNueva = cuadroActualizarCiudadRestaurante.getSelectionModel().getSelectedItem().toString();
@@ -1574,6 +1567,17 @@ public class ControladorVentanaPrincipal implements Initializable {
                     actualizarDireccionRestaurante.setString(2,restaurantePorActualizar);
                     actualizarDireccionRestaurante.executeUpdate();
                 }
+
+                if (!cuadroActualizarNombreRestaurante.getText().equals("")) {
+                    String nombreAUsar = cuadroActualizarNombreRestaurante.getText();
+                    String actualizarNombre = "UPDATE RESTAURANTES SET NOMBRE =? WHERE NOMBRE =?";
+                    PreparedStatement actualizarNombreRestaurante = connection.prepareStatement(actualizarNombre);
+                    actualizarNombreRestaurante.setString(1,nombreAUsar);
+                    actualizarNombreRestaurante.setString(2,restaurantePorActualizar);
+                    actualizarNombreRestaurante.executeUpdate();
+                }
+
+
             } else {
                 ventanaError("Se debe seleccionar un restaurante");
             }
@@ -1629,7 +1633,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     public void actualizarEstablecimiento(){
 
-        Object nombreRestaurante = cuadroRestaurantesPlatillos.getSelectionModel().getSelectedItem();
+        Object nombreRestaurante = cuadroActualizarRestaurantes.getSelectionModel().getSelectedItem();
         Object establecimientoNuevo = cuadroActualizarEstablecimiento.getSelectionModel().getSelectedItem();
 
         if(nombreRestaurante == null || establecimientoNuevo ==null)
@@ -1654,7 +1658,7 @@ public class ControladorVentanaPrincipal implements Initializable {
     }
 
     public void actualizarRangoPrecio(){
-        Object nombreRestaurante = cuadroRestaurantesPlatillos.getSelectionModel().getSelectedItem();
+        Object nombreRestaurante = cuadroActualizarRestaurantes.getSelectionModel().getSelectedItem();
         Object rangoPrecioNuevo = cuadroActualizarRangoPrecio.getSelectionModel().getSelectedItem();
 
         if(nombreRestaurante == null || rangoPrecioNuevo ==null)
