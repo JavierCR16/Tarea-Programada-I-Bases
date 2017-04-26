@@ -9,9 +9,11 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
+import javax.swing.table.*;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
@@ -278,6 +280,90 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     @FXML
     Button botonEliminarTipoCocina;
+
+    @FXML
+    ComboBox cuadroCiudadComentariosRestaurante;
+
+    @FXML
+    ComboBox cuadroNombreComentariosRestaurante;
+
+    @FXML
+    Button botonComentariosRestaurante;
+
+    @FXML
+    TableView tablaComentariosRestaurante;
+
+    @FXML
+    TableColumn columnaFechasComentariosRestaurante;
+
+    @FXML
+    TableColumn columnaTextoComentariosRestaurante;
+
+    @FXML
+    ComboBox cuadroBuscarAmigosColaborador;
+
+    @FXML
+    Button botonBuscarAmigosColaborador;
+
+    @FXML
+    TableView tablaAmigosColaborador;
+
+    @FXML
+    TableColumn columnaNombreAmigoColaborador;
+
+    @FXML
+    ComboBox cuadroCiudadRestaurantesVegetarianos;
+
+    @FXML
+    Button botonBuscarRestaurantesVegetarianos;
+
+    @FXML
+    TableView tablaRestaurantesVegetarianos;
+
+    @FXML
+    TableColumn columnaNombreRestaurantesVegetarianos;
+
+    @FXML
+    ComboBox cuadroCiudadBaresRecomendados;
+
+    @FXML
+    ComboBox cuadroColaboradorBaresRecomendados;
+
+    @FXML
+    Button botonBaresRecomendados;
+
+    @FXML
+    TableView tablaBaresRecomendados;
+
+    @FXML
+    TableColumn columnaAmigoBaresRecomendados;
+
+    @FXML
+    TableColumn columnaNombreBaresRecomendados;
+
+    @FXML
+    TableColumn columnaValoracionBaresRecomendados;
+
+    @FXML
+    ComboBox cuadroRestaurantePlatillosValorados;
+
+    @FXML
+    ComboBox cuadroColaboradorPlatillosValorados;
+
+    @FXML
+    Button botonPlatillosValorados;
+
+    @FXML
+    TableView tablaPlatillosValorados;
+
+    @FXML
+    TableColumn columnaAmigoPlatillosValorados;
+
+    @FXML
+    TableColumn columnaNombrePlatillosValorados;
+
+    @FXML
+    TableColumn columnaValoracionPlatillosValorados;
 
     Connection connection;
 
@@ -616,7 +702,7 @@ public class ControladorVentanaPrincipal implements Initializable {
         String sqlCargarPaises =
 
                 "BULK INSERT PROGRABASES1.dbo.CARGARPAISES" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
+                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE = 'ACP')";
 
         //***********************************************************************************************************************************************************
@@ -627,7 +713,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         String sqlCargarTiposCocina =
                 "BULK INSERT PROGRABASES1.dbo.CARGARTIPOSCOCINA" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
+                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
         //************************************************************************************************************************************************************
         String quitarReferenciaCiudades = "ALTER TABLE RESTAURANTES DROP CONSTRAINT FK_RESTAURANTES_CARGARCIUDADES";
@@ -640,7 +726,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         String sqlCargaCiudades =
                 "BULK INSERT PROGRABASES1.dbo.CARGARCIUDADES" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\ciudades.csv'" +
+                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\ciudades.csv'" +
                         " WITH( FIRSTROW =2, FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
         //************************************************************************************************************************************************************
         ArrayList<String> arregloCocina = new ArrayList<>();
