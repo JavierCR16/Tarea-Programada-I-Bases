@@ -286,6 +286,9 @@ public class ControladorVentanaPrincipal implements Initializable {
     String correoColaboradorLogueado = "";
 
     public void initialize(URL fxmlLocations, ResourceBundle resources) {
+
+        cuadroCorreoLogueado.setDisable(true);
+        cuadroCorreoAmigo.setDisable(true);
         establecerConexion();
         setDatosDefecto();
         configurarColumnasTablas();
@@ -444,8 +447,11 @@ public class ControladorVentanaPrincipal implements Initializable {
         });
 
         botonEliminarPlatillo.setOnAction(event -> {
-
+            eliminarPlatillo();
+            cuadroRestauranteEliminarPlatillo.getSelectionModel().clearSelection();
+            cuadroPlatilloEliminarPlatillo.getSelectionModel().clearSelection();
         });
+
         cuadroRestauranteEliminarPlatillo.setOnAction(event ->{
             cuadroPlatilloEliminarPlatillo.getItems().removeAll(cuadroPlatilloEliminarPlatillo.getItems());
             if(cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem() !=null){
@@ -1862,6 +1868,25 @@ public class ControladorVentanaPrincipal implements Initializable {
     }
 
     public void eliminarPlatillo(){
+        Object restaurante = cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem();
+        Object platillo = cuadroPlatilloEliminarPlatillo.getSelectionModel().getSelectedItem();
+
+        if(restaurante==null || platillo ==null)
+            ventanaError("Se debe escoger el restaurante y el platillo a eliminar");
+        else{
+            try {
+                int idRestauranteAEliminar = buscarIdRestaurante(restaurante.toString());
+
+                String eliminarPlatillo = "DELETE FROM PLATILLOS WHERE NOMBRE =? AND IDRESTAURANTE = ?";
+                PreparedStatement eliminarComida = connection.prepareStatement(eliminarPlatillo);
+                eliminarComida.setString(1,platillo.toString());
+                eliminarComida.setInt(2,idRestauranteAEliminar);
+                eliminarComida.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
 
     }
 
