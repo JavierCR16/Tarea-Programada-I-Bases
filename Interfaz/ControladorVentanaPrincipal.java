@@ -1,5 +1,6 @@
 package Interfaz;
 
+import Auxiliares.Amigo;
 import Auxiliares.SolicitudAmistad;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -365,6 +366,12 @@ public class ControladorVentanaPrincipal implements Initializable {
     @FXML
     TableColumn columnaValoracionPlatillosValorados;
 
+    @FXML
+    Button botonActualizarTabConsultas;
+
+    @FXML
+    Button botonActualizarTabMasConsultas;
+
     Connection connection;
 
     Statement statement;
@@ -466,6 +473,7 @@ public class ControladorVentanaPrincipal implements Initializable {
         botonRefrescarRestaurantesCaracteristicas.setOnAction(event -> {
             setListaRestaurantesAgregarMas();
         });
+
         agregarMasTipoCocina.setOnAction(event -> {
             agregarMasTipoCocina();
             tipoCocinaMas.getSelectionModel().clearSelection();
@@ -567,6 +575,16 @@ public class ControladorVentanaPrincipal implements Initializable {
 
 
             }
+        });
+
+        botonBuscarAmigosColaborador.setOnAction(event ->{
+
+            consultarAmigosColaborador();
+
+        });
+
+        botonActualizarTabConsultas.setOnAction(event ->{
+            actualizarTabConsultas();
         });
 
 
@@ -702,7 +720,7 @@ public class ControladorVentanaPrincipal implements Initializable {
         String sqlCargarPaises =
 
                 "BULK INSERT PROGRABASES1.dbo.CARGARPAISES" +
-                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE = 'ACP')";
 
         //***********************************************************************************************************************************************************
@@ -713,7 +731,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         String sqlCargarTiposCocina =
                 "BULK INSERT PROGRABASES1.dbo.CARGARTIPOSCOCINA" +
-                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
         //************************************************************************************************************************************************************
         String quitarReferenciaCiudades = "ALTER TABLE RESTAURANTES DROP CONSTRAINT FK_RESTAURANTES_CARGARCIUDADES";
@@ -726,7 +744,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         String sqlCargaCiudades =
                 "BULK INSERT PROGRABASES1.dbo.CARGARCIUDADES" +
-                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\ciudades.csv'" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\ciudades.csv'" +
                         " WITH( FIRSTROW =2, FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
         //************************************************************************************************************************************************************
         ArrayList<String> arregloCocina = new ArrayList<>();
@@ -1059,6 +1077,7 @@ public class ControladorVentanaPrincipal implements Initializable {
     public void configurarColumnasTablas() {
         columnaNombreSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad, String>("nombre"));
         columnaCorreoSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad, String>("correo"));
+        columnaNombreAmigoColaborador.setCellValueFactory(new PropertyValueFactory<Amigo,String>("nombreAmigo"));
     }
 
     public void refrescarSolicitudesAmistad() {
@@ -1973,6 +1992,69 @@ public class ControladorVentanaPrincipal implements Initializable {
             }
 
         }
+
+    }
+
+    public void consultarAmigosColaborador(){
+        Object colaboradorSeleccionado = cuadroBuscarAmigosColaborador.getSelectionModel().getSelectedItem();
+        if(colaboradorSeleccionado ==null)
+            ventanaError("Debe seleccionar un colaborador");
+        else{
+            try {
+                ArrayList<Amigo> amigosColaborador = new ArrayList<>();
+                String seleccionarColaborador = colaboradorSeleccionado.toString();
+
+                String buscarAmigos = "SELECT CORREOAMIGO FROM COLABORADORES,AMIGOS WHERE NOMBRE = ? AND  ACEPTADO = ? " +
+                        "AND CORREO = CORREOCOLABORADOR";
+                PreparedStatement buscarAmigosColaborador = connection.prepareStatement(buscarAmigos);
+                buscarAmigosColaborador.setString(1,seleccionarColaborador);
+                buscarAmigosColaborador.setString(2,"SI");
+                ResultSet tuplesAmigos = buscarAmigosColaborador.executeQuery();
+
+                while(tuplesAmigos.next()){
+                    amigosColaborador.add(new Amigo(tuplesAmigos.getString("CORREOAMIGO")));
+                }
+
+                ObservableList<Amigo> listaAmigos = FXCollections.observableArrayList(amigosColaborador);
+
+                tablaAmigosColaborador.setItems(listaAmigos);
+
+
+            }
+            catch(SQLException e){
+                e.printStackTrace();
+            }
+
+
+        }
+
+    }
+
+    public void actualizarTabConsultas(){
+        ObservableList<String> colaboradoresDisponibles = colaboradoresTotales();
+        cuadroBuscarAmigosColaborador.setItems(colaboradoresDisponibles);
+    }
+
+    public ObservableList<String> colaboradoresTotales(){
+
+        ArrayList<String> colaboradoresDisponibles  = new ArrayList<>();
+        ObservableList<String> listaColaboradores = null;
+        try{
+            String buscarColaborades = "SELECT NOMBRE FROM COLABORADORES";
+            PreparedStatement buscarColaboradoresTotales = connection.prepareStatement(buscarColaborades);
+            ResultSet busquedaColaboradores = buscarColaboradoresTotales.executeQuery();
+
+            while(busquedaColaboradores.next()){
+                colaboradoresDisponibles.add(busquedaColaboradores.getString("NOMBRE"));
+            }
+
+            listaColaboradores = FXCollections.observableArrayList(colaboradoresDisponibles);
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return listaColaboradores;
 
     }
 
