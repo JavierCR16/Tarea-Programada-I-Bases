@@ -438,6 +438,45 @@ public class ControladorVentanaPrincipal implements Initializable {
             actualizarTabPlatillos();
         });
 
+        botonAgregarPlatillo.setOnAction(event -> {
+            agregarPlatillo();
+            limpiarInformacionAgregarPlatillo();
+        });
+
+        botonEliminarPlatillo.setOnAction(event -> {
+
+        });
+        cuadroRestauranteEliminarPlatillo.setOnAction(event ->{
+            cuadroPlatilloEliminarPlatillo.getItems().removeAll(cuadroPlatilloEliminarPlatillo.getItems());
+            if(cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem() !=null){
+                try {
+                    ArrayList<String> platillos = new ArrayList<>();
+                    String restauranteEscogido = cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem().toString();
+
+                    int buscarIdRestaurante = buscarIdRestaurante(restauranteEscogido);
+                    String buscarPlatillosAsociados = "SELECT NOMBRE FROM  PLATILLOS WHERE IDRESTAURANTE = ?";
+                    PreparedStatement busquedaPlatillos = connection.prepareStatement(buscarPlatillosAsociados);
+
+                    busquedaPlatillos.setInt(1,buscarIdRestaurante);
+                    ResultSet extraccionDePlatillos = busquedaPlatillos.executeQuery();
+
+                    while (extraccionDePlatillos.next()){
+                        platillos.add(extraccionDePlatillos.getString("NOMBRE"));
+                    }
+                    ObservableList<String> listaPlatillos = FXCollections.observableArrayList(platillos);
+
+                    cuadroPlatilloEliminarPlatillo.setItems(listaPlatillos);
+
+
+                }
+                catch(SQLException e){
+                    e.printStackTrace();
+                }
+
+
+            }
+        });
+
 
 
     }
@@ -1782,6 +1821,48 @@ public class ControladorVentanaPrincipal implements Initializable {
             }
 
         }
+    }
+
+    public void agregarPlatillo(){
+        Object restauranteAgregarPlatillo = cuadroRestaurantesPlatillos.getSelectionModel().getSelectedItem();
+        String nombrePlatillo = cuadroNombreNuevoPlatillo.getText();
+        String descripcionPlatillo= cuadroDescripcionNuevoPlatillo.getText();
+        if(restauranteAgregarPlatillo ==null || nombrePlatillo.equals("") || descripcionPlatillo.equals("")){
+            ventanaError("Se debe ingresar todos los datos del platillo");
+        }
+        else{
+            try{
+                int idRestaurante = buscarIdRestaurante(restauranteAgregarPlatillo.toString());
+                String agregarPlatillo = "INSERT INTO PLATILLOS (NOMBRE,IDRESTAURANTE,DESCRIPCION) VALUES (?,?,?)";
+                PreparedStatement insercionPlatillo = connection.prepareStatement(agregarPlatillo);
+                insercionPlatillo.setString(1,nombrePlatillo);
+                insercionPlatillo.setInt(2,idRestaurante);
+                insercionPlatillo.setString(3,descripcionPlatillo);
+                insercionPlatillo.executeUpdate();
+
+                String insertarEnContienePlatillos = "INSERT INTO CONTIENEPLATILLOS (IDRESTAURANTE,NOMBREPLATILLO) VALUES (?,?)";
+                PreparedStatement insercionContienePlatillos = connection.prepareStatement(insertarEnContienePlatillos);
+                insercionContienePlatillos.setInt(1,idRestaurante);
+                insercionContienePlatillos.setString(2,nombrePlatillo);
+                insercionContienePlatillos.executeUpdate();
+
+            }
+            catch(SQLException e){
+                ventanaError("El platillo ingresado ya existe. Intente de nuevo");
+            }
+
+
+        }
+    }
+
+    public void limpiarInformacionAgregarPlatillo(){
+        cuadroRestaurantesPlatillos.getSelectionModel().clearSelection();
+        cuadroNombreNuevoPlatillo.clear();
+        cuadroDescripcionNuevoPlatillo.clear();
+    }
+
+    public void eliminarPlatillo(){
+
     }
 
 
