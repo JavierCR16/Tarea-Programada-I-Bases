@@ -542,7 +542,7 @@
                     </columns>
                   </TableView>
                   <Button fx:id="botonComentariosRestaurante" layoutX="183.0" layoutY="197.0" mnemonicParsing="false" text="Buscar" />
-                  <Button fx:id="botonBuscarAmigosColaborador" layoutX="514.0" layoutY="184.0" mnemonicParsing="false" text="Lista de amigos" />
+                  <Button fx:id="botonBuscarAmigosColaborador" layoutX="514.0" layoutY="210.0" mnemonicParsing="false" text="Lista de amigos" />
                   <Label layoutX="466.0" layoutY="37.0" text="Amigos de un Colaborador">
                      <font>
                         <Font name="Baskerville Old Face" size="18.0" />
@@ -556,9 +556,13 @@
                   <Separator layoutX="737.0" layoutY="55.0" orientation="VERTICAL" prefHeight="458.0" prefWidth="5.0" />
                   <ComboBox fx:id="cuadroBuscarAmigosColaborador" layoutX="464.0" layoutY="130.0" prefHeight="25.0" prefWidth="198.0" />
                   <TableView fx:id="tablaAmigosColaborador" layoutX="424.0" layoutY="239.0" prefHeight="277.0" prefWidth="280.0">
-                    <columns>
-                      <TableColumn fx:id="columnaNombreAmigoColaborador" prefWidth="279.0" text="Amigos" />
-                    </columns>
+                     <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                     </columnResizePolicy>
+                     <columns>
+                        <TableColumn fx:id="columnaNombreAmigoColaborador" prefWidth="134.0" text="Amigos" />
+                        <TableColumn fx:id="columnaCorreoAmigoColaborador" prefWidth="75.0" text="Correo" />
+                     </columns>
                   </TableView>
                   <TableView fx:id="tablaRestaurantesVegetarianos" layoutX="861.0" layoutY="231.0" prefHeight="294.0" prefWidth="306.0">
                     <columns>
@@ -588,6 +592,7 @@
                   <ComboBox fx:id="cuadroCiudadRestaurantesVegetarianos" layoutX="1037.0" layoutY="116.0" prefHeight="25.0" prefWidth="183.0" />
                   <Button fx:id="botonBuscarRestaurantesVegetarianos" layoutX="983.0" layoutY="162.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="62.0" text="Buscar" />
                   <Button fx:id="botonActualizarTabConsultas" layoutX="529.0" layoutY="525.0" mnemonicParsing="false" text="Actualizar" />
+                  <ComboBox fx:id="cuadroBuscarAmigosColaboradorCorreo" layoutX="464.0" layoutY="165.0" prefHeight="25.0" prefWidth="198.0" />
                </children>
             </AnchorPane>
         </content>
@@ -633,7 +638,7 @@
                   </Label>
                   <ComboBox fx:id="cuadroCiudadBaresRecomendados" layoutX="332.0" layoutY="118.0" prefHeight="25.0" prefWidth="205.0" />
                   <ComboBox fx:id="cuadroColaboradorBaresRecomendados" layoutX="332.0" layoutY="159.0" prefHeight="25.0" prefWidth="205.0" />
-                  <Button fx:id="botonBaresRecomendados" layoutX="297.0" layoutY="209.0" mnemonicParsing="false" text="Buscar" />
+                  <Button fx:id="botonBaresRecomendados" layoutX="174.0" layoutY="209.0" mnemonicParsing="false" text="Buscar" />
                   <Label layoutX="753.0" layoutY="123.0" text="Seleccione un restaurante:">
                      <font>
                         <Font name="Arial Rounded MT Bold" size="15.0" />
@@ -646,8 +651,10 @@
                   </Label>
                   <ComboBox fx:id="cuadroRestaurantePlatillosValorados" layoutX="994.0" layoutY="119.0" prefHeight="25.0" prefWidth="215.0" />
                   <ComboBox fx:id="cuadroColaboradorPlatillosValorados" layoutX="994.0" layoutY="159.0" prefHeight="25.0" prefWidth="215.0" />
-                  <Button fx:id="botonPlatillosValorados" layoutX="953.0" layoutY="209.0" mnemonicParsing="false" text="Buscar" />
+                  <Button fx:id="botonPlatillosValorados" layoutX="809.0" layoutY="209.0" mnemonicParsing="false" text="Buscar" />
                   <Button fx:id="botonActualizarTabMasConsultas" layoutX="636.0" layoutY="529.0" mnemonicParsing="false" text="Actualizar" />
+                  <ComboBox fx:id="cuadroColaboradoresBaresRecomendadosCorreo" layoutX="332.0" layoutY="209.0" prefHeight="25.0" prefWidth="205.0" />
+                  <ComboBox fx:id="cuadroColaboradorPlatillosValoradosCorreo" layoutX="994.0" layoutY="209.0" prefHeight="25.0" prefWidth="215.0" />
                </children>
             </AnchorPane>
         </content>

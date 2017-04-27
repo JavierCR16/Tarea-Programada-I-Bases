@@ -372,6 +372,18 @@ public class ControladorVentanaPrincipal implements Initializable {
     @FXML
     Button botonActualizarTabMasConsultas;
 
+    @FXML
+    TableColumn columnaCorreoAmigoColaborador;
+
+    @FXML
+    ComboBox cuadroBuscarAmigosColaboradorCorreo;
+
+    @FXML
+    ComboBox cuadroColaboradoresBaresRecomendadosCorreo;
+
+    @FXML
+    ComboBox cuadroColaboradorPlatillosValoradosCorreo;
+
     Connection connection;
 
     Statement statement;
@@ -587,6 +599,106 @@ public class ControladorVentanaPrincipal implements Initializable {
             actualizarTabConsultas();
         });
 
+        botonActualizarTabMasConsultas.setOnAction(event -> {
+            actualizarTabMasConsultas();
+        });
+
+        cuadroBuscarAmigosColaborador.setOnAction(event->{
+
+            cuadroBuscarAmigosColaboradorCorreo.getItems().removeAll(cuadroBuscarAmigosColaboradorCorreo.getItems());
+            if (cuadroBuscarAmigosColaborador.getSelectionModel().getSelectedItem() != null) {
+                String nombre = cuadroBuscarAmigosColaborador.getSelectionModel().getSelectedItem().toString();
+                List<String> separarNombre = Arrays.asList(nombre.split(" "));
+                String nombreBuscar = "";
+                String apellidoPaterno = separarNombre.get(separarNombre.size() - 2);
+                String apellidoMaterno = separarNombre.get(separarNombre.size() - 1);
+                for (int i = 0; i < separarNombre.size() - 2; i++) {
+                    nombreBuscar += separarNombre.get(i) + " ";
+
+                }
+                ResultSet busquedaCorreo = null;
+                String buscarCorreoDelSeleccionado = "SELECT CORREO FROM COLABORADORES WHERE NOMBRE= ? AND APELLIDOPATERNO=? AND APELLIDOMATERNO=?";
+                try {
+                    PreparedStatement preparedStament = connection.prepareStatement(buscarCorreoDelSeleccionado);
+                    preparedStament.setString(1, nombreBuscar);
+                    preparedStament.setString(2, apellidoPaterno);
+                    preparedStament.setString(3, apellidoMaterno);
+                    busquedaCorreo = preparedStament.executeQuery();
+
+                    while (busquedaCorreo.next()) {
+                        cuadroBuscarAmigosColaboradorCorreo.getItems().add(busquedaCorreo.getString("CORREO"));
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+        });
+
+        cuadroColaboradorBaresRecomendados.setOnAction(event -> {
+            cuadroColaboradoresBaresRecomendadosCorreo.getItems().removeAll(cuadroColaboradoresBaresRecomendadosCorreo.getItems());
+            if (cuadroColaboradorBaresRecomendados.getSelectionModel().getSelectedItem() != null) {
+                String nombre = cuadroColaboradorBaresRecomendados.getSelectionModel().getSelectedItem().toString();
+                List<String> separarNombre = Arrays.asList(nombre.split(" "));
+                String nombreBuscar = "";
+                String apellidoPaterno = separarNombre.get(separarNombre.size() - 2);
+                String apellidoMaterno = separarNombre.get(separarNombre.size() - 1);
+                for (int i = 0; i < separarNombre.size() - 2; i++) {
+                    nombreBuscar += separarNombre.get(i) + " ";
+
+                }
+                ResultSet busquedaCorreo = null;
+                String buscarCorreoDelSeleccionado = "SELECT CORREO FROM COLABORADORES WHERE NOMBRE= ? AND APELLIDOPATERNO=? AND APELLIDOMATERNO=?";
+                try {
+                    PreparedStatement preparedStament = connection.prepareStatement(buscarCorreoDelSeleccionado);
+                    preparedStament.setString(1, nombreBuscar);
+                    preparedStament.setString(2, apellidoPaterno);
+                    preparedStament.setString(3, apellidoMaterno);
+                    busquedaCorreo = preparedStament.executeQuery();
+
+                    while (busquedaCorreo.next()) {
+                        cuadroColaboradoresBaresRecomendadosCorreo.getItems().add(busquedaCorreo.getString("CORREO"));
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        });
+
+        cuadroColaboradorPlatillosValorados.setOnAction(event ->{
+            cuadroColaboradorPlatillosValoradosCorreo.getItems().removeAll(cuadroColaboradorPlatillosValoradosCorreo.getItems());
+            if (cuadroColaboradorPlatillosValorados.getSelectionModel().getSelectedItem() != null) {
+                String nombre = cuadroColaboradorPlatillosValorados.getSelectionModel().getSelectedItem().toString();
+                List<String> separarNombre = Arrays.asList(nombre.split(" "));
+                String nombreBuscar = "";
+                String apellidoPaterno = separarNombre.get(separarNombre.size() - 2);
+                String apellidoMaterno = separarNombre.get(separarNombre.size() - 1);
+                for (int i = 0; i < separarNombre.size() - 2; i++) {
+                    nombreBuscar += separarNombre.get(i) + " ";
+
+                }
+                ResultSet busquedaCorreo = null;
+                String buscarCorreoDelSeleccionado = "SELECT CORREO FROM COLABORADORES WHERE NOMBRE= ? AND APELLIDOPATERNO=? AND APELLIDOMATERNO=?";
+                try {
+                    PreparedStatement preparedStament = connection.prepareStatement(buscarCorreoDelSeleccionado);
+                    preparedStament.setString(1, nombreBuscar);
+                    preparedStament.setString(2, apellidoPaterno);
+                    preparedStament.setString(3, apellidoMaterno);
+                    busquedaCorreo = preparedStament.executeQuery();
+
+                    while (busquedaCorreo.next()) {
+                        cuadroColaboradorPlatillosValoradosCorreo.getItems().add(busquedaCorreo.getString("CORREO"));
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
 
     }
@@ -887,6 +999,10 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         cuadroSexoNuevoColaborador.getItems().addAll("Hombre", "Mujer");
         //****************************************************************** Caracteristicas seteadas desde la base
+
+        cuadroCiudadComentariosRestaurante.setItems(listaCiudades);
+        cuadroCiudadRestaurantesVegetarianos.setItems(listaCiudades);
+        cuadroCiudadBaresRecomendados.setItems(listaCiudades);
         cuadroEstablecimiento.setItems(listaEstablecimiento);
         cuadroRangoPrecio.setItems(listaRangos);
         cuadroTipoCocina.setItems(listaCocina);
@@ -1078,6 +1194,7 @@ public class ControladorVentanaPrincipal implements Initializable {
         columnaNombreSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad, String>("nombre"));
         columnaCorreoSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad, String>("correo"));
         columnaNombreAmigoColaborador.setCellValueFactory(new PropertyValueFactory<Amigo,String>("nombreAmigo"));
+        columnaCorreoAmigoColaborador.setCellValueFactory(new PropertyValueFactory<Amigo,String>("correoAmigo"));
     }
 
     public void refrescarSolicitudesAmistad() {
@@ -1997,23 +2114,41 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     public void consultarAmigosColaborador(){
         Object colaboradorSeleccionado = cuadroBuscarAmigosColaborador.getSelectionModel().getSelectedItem();
-        if(colaboradorSeleccionado ==null)
+        Object correoColaboradorSeleccionado = cuadroBuscarAmigosColaboradorCorreo.getSelectionModel().getSelectedItem();
+
+        if(colaboradorSeleccionado ==null || correoColaboradorSeleccionado==null)
             ventanaError("Debe seleccionar un colaborador");
         else{
             try {
                 ArrayList<Amigo> amigosColaborador = new ArrayList<>();
-                String seleccionarColaborador = colaboradorSeleccionado.toString();
+                ArrayList<String> correosAmigos = new ArrayList<>();
+                String correoColaborador = correoColaboradorSeleccionado.toString();
 
-                String buscarAmigos = "SELECT CORREOAMIGO FROM COLABORADORES,AMIGOS WHERE NOMBRE = ? AND  ACEPTADO = ? " +
-                        "AND CORREO = CORREOCOLABORADOR";
-                PreparedStatement buscarAmigosColaborador = connection.prepareStatement(buscarAmigos);
-                buscarAmigosColaborador.setString(1,seleccionarColaborador);
-                buscarAmigosColaborador.setString(2,"SI");
-                ResultSet tuplesAmigos = buscarAmigosColaborador.executeQuery();
+                String buscarCorreoAmigos = "SELECT CORREOAMIGO FROM AMIGOS WHERE CORREOCOLABORADOR =? AND ACEPTADO=?";
+                PreparedStatement buscarCorreoAmigosColaborador = connection.prepareStatement(buscarCorreoAmigos);
+                buscarCorreoAmigosColaborador.setString(1,correoColaborador);
+                buscarCorreoAmigosColaborador.setString(2,"SI");
+                ResultSet tuplesCorreoAmigos = buscarCorreoAmigosColaborador.executeQuery();
 
-                while(tuplesAmigos.next()){
-                    amigosColaborador.add(new Amigo(tuplesAmigos.getString("CORREOAMIGO")));
+                while(tuplesCorreoAmigos.next()){
+                    correosAmigos.add(tuplesCorreoAmigos.getString("CORREOAMIGO"));
                 }
+
+                String buscarCorreoOtroLado = "SELECT CORREOCOLABORADOR FROM AMIGOS WHERE CORREOAMIGO =? AND ACEPTADO=?";
+                PreparedStatement buscarCorreoAmigosColaboradorOtroLado = connection.prepareStatement(buscarCorreoOtroLado);
+                buscarCorreoAmigosColaboradorOtroLado.setString(1,correoColaborador);
+                buscarCorreoAmigosColaboradorOtroLado.setString(2,"SI");
+                ResultSet correoOtroLado = buscarCorreoAmigosColaboradorOtroLado.executeQuery();
+
+                while(correoOtroLado.next()){
+                    correosAmigos.add(correoOtroLado.getString("CORREOCOLABORADOR"));
+                }
+                for(int i =0;i<correosAmigos.size();i++){
+                    String nombreColaborador = buscarNombreColaborador(correosAmigos.get(i));
+                    amigosColaborador.add(new Amigo(nombreColaborador,correosAmigos.get(i)));
+                }
+
+
 
                 ObservableList<Amigo> listaAmigos = FXCollections.observableArrayList(amigosColaborador);
 
@@ -2032,20 +2167,28 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     public void actualizarTabConsultas(){
         ObservableList<String> colaboradoresDisponibles = colaboradoresTotales();
+        ObservableList<String> restaurantesDisponibles = restaurantesTotales();
+
         cuadroBuscarAmigosColaborador.setItems(colaboradoresDisponibles);
+        cuadroNombreComentariosRestaurante.setItems(restaurantesDisponibles);
+
+
     }
 
     public ObservableList<String> colaboradoresTotales(){
 
         ArrayList<String> colaboradoresDisponibles  = new ArrayList<>();
+        String colaboradorActual= "";
         ObservableList<String> listaColaboradores = null;
         try{
-            String buscarColaborades = "SELECT NOMBRE FROM COLABORADORES";
+            String buscarColaborades = "SELECT NOMBRE,APELLIDOPATERNO,APELLIDOMATERNO FROM COLABORADORES";
             PreparedStatement buscarColaboradoresTotales = connection.prepareStatement(buscarColaborades);
             ResultSet busquedaColaboradores = buscarColaboradoresTotales.executeQuery();
 
             while(busquedaColaboradores.next()){
-                colaboradoresDisponibles.add(busquedaColaboradores.getString("NOMBRE"));
+                colaboradorActual= busquedaColaboradores.getString("NOMBRE") +" "+busquedaColaboradores.getString("APELLIDOPATERNO")+ " "+busquedaColaboradores.getString("APELLIDOMATERNO");
+                colaboradoresDisponibles.add(colaboradorActual);
+                colaboradorActual = "";
             }
 
             listaColaboradores = FXCollections.observableArrayList(colaboradoresDisponibles);
@@ -2058,6 +2201,37 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     }
 
+    public String buscarNombreColaborador(String correo){
+        String nombreBuscado = "";
+        try{
+
+            String buscarNombreColaborador = "SELECT NOMBRE FROM COLABORADORES WHERE CORREO = ?";
+            PreparedStatement busquedaNombre = connection.prepareStatement(buscarNombreColaborador);
+            busquedaNombre.setString(1,correo);
+            ResultSet adquirirNombre = busquedaNombre.executeQuery();
+            while(adquirirNombre.next()){
+                nombreBuscado = adquirirNombre.getString("NOMBRE");
+            }
+
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return nombreBuscado;
+
+    }
+
+    public void actualizarTabMasConsultas(){
+
+        ObservableList <String> listaColaboradores = colaboradoresTotales();
+        ObservableList <String> listaRestaurantes = restaurantesTotales();
+
+        cuadroColaboradorBaresRecomendados.setItems(listaColaboradores);
+        cuadroColaboradorPlatillosValorados.setItems(listaColaboradores);
+        cuadroRestaurantePlatillosValorados.setItems(listaRestaurantes);
+
+    }
 
 
 }
