@@ -1,6 +1,7 @@
 package Interfaz;
 
 import Auxiliares.Amigo;
+import Auxiliares.Restaurante;
 import Auxiliares.SolicitudAmistad;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -506,7 +507,7 @@ public class ControladorVentanaPrincipal implements Initializable {
             tiempoComidaMas.getSelectionModel().clearSelection();
         });
 
-        botonActualizarRestaurante.setOnAction(event ->{
+        botonActualizarRestaurante.setOnAction(event -> {
             actualizarRestaurante();
             limpiarActualizarRestaurante();
             setListaRestaurantesAgregarMas();
@@ -558,9 +559,9 @@ public class ControladorVentanaPrincipal implements Initializable {
             cuadroPlatilloEliminarPlatillo.getSelectionModel().clearSelection();
         });
 
-        cuadroRestauranteEliminarPlatillo.setOnAction(event ->{
+        cuadroRestauranteEliminarPlatillo.setOnAction(event -> {
             cuadroPlatilloEliminarPlatillo.getItems().removeAll(cuadroPlatilloEliminarPlatillo.getItems());
-            if(cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem() !=null){
+            if (cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem() != null) {
                 try {
                     ArrayList<String> platillos = new ArrayList<>();
                     String restauranteEscogido = cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem().toString();
@@ -569,10 +570,10 @@ public class ControladorVentanaPrincipal implements Initializable {
                     String buscarPlatillosAsociados = "SELECT NOMBRE FROM  PLATILLOS WHERE IDRESTAURANTE = ?";
                     PreparedStatement busquedaPlatillos = connection.prepareStatement(buscarPlatillosAsociados);
 
-                    busquedaPlatillos.setInt(1,buscarIdRestaurante);
+                    busquedaPlatillos.setInt(1, buscarIdRestaurante);
                     ResultSet extraccionDePlatillos = busquedaPlatillos.executeQuery();
 
-                    while (extraccionDePlatillos.next()){
+                    while (extraccionDePlatillos.next()) {
                         platillos.add(extraccionDePlatillos.getString("NOMBRE"));
                     }
                     ObservableList<String> listaPlatillos = FXCollections.observableArrayList(platillos);
@@ -580,8 +581,7 @@ public class ControladorVentanaPrincipal implements Initializable {
                     cuadroPlatilloEliminarPlatillo.setItems(listaPlatillos);
 
 
-                }
-                catch(SQLException e){
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
 
@@ -589,18 +589,23 @@ public class ControladorVentanaPrincipal implements Initializable {
             }
         });
 
-        botonBuscarAmigosColaborador.setOnAction(event ->{
-
+        botonBuscarAmigosColaborador.setOnAction(event -> {
             consultarAmigosColaborador();
-
+            cuadroBuscarAmigosColaborador.getSelectionModel().clearSelection();
+            cuadroBuscarAmigosColaboradorCorreo.getSelectionModel().clearSelection();
         });
 
-        botonActualizarTabConsultas.setOnAction(event ->{
+        botonActualizarTabConsultas.setOnAction(event -> {
             actualizarTabConsultas();
         });
 
         botonActualizarTabMasConsultas.setOnAction(event -> {
             actualizarTabMasConsultas();
+        });
+
+        botonBuscarRestaurantesVegetarianos.setOnAction(event ->{
+            consultarRestaurantesVegetarianos();
+            cuadroCiudadRestaurantesVegetarianos.getSelectionModel().clearSelection();
         });
 
         cuadroBuscarAmigosColaborador.setOnAction(event->{
@@ -832,7 +837,7 @@ public class ControladorVentanaPrincipal implements Initializable {
         String sqlCargarPaises =
 
                 "BULK INSERT PROGRABASES1.dbo.CARGARPAISES" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
+                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE = 'ACP')";
 
         //***********************************************************************************************************************************************************
@@ -843,7 +848,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         String sqlCargarTiposCocina =
                 "BULK INSERT PROGRABASES1.dbo.CARGARTIPOSCOCINA" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
+                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
         //************************************************************************************************************************************************************
         String quitarReferenciaCiudades = "ALTER TABLE RESTAURANTES DROP CONSTRAINT FK_RESTAURANTES_CARGARCIUDADES";
@@ -856,7 +861,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         String sqlCargaCiudades =
                 "BULK INSERT PROGRABASES1.dbo.CARGARCIUDADES" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\ciudades.csv'" +
+                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\ciudades.csv'" +
                         " WITH( FIRSTROW =2, FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
         //************************************************************************************************************************************************************
         ArrayList<String> arregloCocina = new ArrayList<>();
@@ -1195,6 +1200,7 @@ public class ControladorVentanaPrincipal implements Initializable {
         columnaCorreoSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad, String>("correo"));
         columnaNombreAmigoColaborador.setCellValueFactory(new PropertyValueFactory<Amigo,String>("nombreAmigo"));
         columnaCorreoAmigoColaborador.setCellValueFactory(new PropertyValueFactory<Amigo,String>("correoAmigo"));
+        columnaNombreRestaurantesVegetarianos.setCellValueFactory(new PropertyValueFactory<Restaurante, String>("nombre"));
     }
 
     public void refrescarSolicitudesAmistad() {
@@ -2231,6 +2237,75 @@ public class ControladorVentanaPrincipal implements Initializable {
         cuadroColaboradorPlatillosValorados.setItems(listaColaboradores);
         cuadroRestaurantePlatillosValorados.setItems(listaRestaurantes);
 
+    }
+
+    public void consultarRestaurantesVegetarianos(){
+        Object ciudadSeleccionada = cuadroCiudadRestaurantesVegetarianos.getSelectionModel().getSelectedItem();
+        if(ciudadSeleccionada == null)
+            ventanaError("Debe seleccionar una ciudad");
+        else{
+            try {
+                ArrayList<Restaurante> restaurantesVegetarianos = new ArrayList<>();
+                String nombreCiudad = ciudadSeleccionada.toString();
+                int idCiudad = buscarIdCiudad(nombreCiudad);
+                int idRestric = buscarIdRestricciones("Vegetarianas");
+                int idTiempoCom = buscarIdTiempoComida("Cena");
+                int idRangoPrecio = buscarIdRangoPrecio("Intermedio");
+                String restaurantesSelecc = "SELECT NOMBRE FROM RESTAURANTES, RESTRICCIONESRESTAURANTE rest, " +
+                        "TIEMPOSCOMIDARESTAURANTE tiempos WHERE IDCIUDAD = ? AND IDRANGOPRECIO = ? " +
+                        "AND ID = rest.IDRESTAURANTE AND IDRESTRICCIONES = ? AND ID = tiempos.IDRESTAURANTE AND " +
+                        "IDTIEMPOCOMIDA = ?";
+
+                PreparedStatement buscarRestaurantes = connection.prepareStatement(restaurantesSelecc);
+                buscarRestaurantes.setInt(1, idCiudad);
+                buscarRestaurantes.setInt(2, idRangoPrecio);
+                buscarRestaurantes.setInt(3, idRestric);
+                buscarRestaurantes.setInt(4, idTiempoCom);
+                ResultSet listaRestaurantes = buscarRestaurantes.executeQuery();
+
+                while (listaRestaurantes.next()){
+                    restaurantesVegetarianos.add(new Restaurante (listaRestaurantes.getString("NOMBRE")));
+                }
+
+                ObservableList<Restaurante> restaurantesVegetarianosCena = FXCollections.observableArrayList(restaurantesVegetarianos);
+                tablaRestaurantesVegetarianos.setItems(restaurantesVegetarianosCena);
+
+            }
+            catch(SQLException e){
+                e.printStackTrace();
+            }
+
+
+        }
+    }
+
+    public void consultarBaresRecomendados(){
+        Object ciudadSeleccionada = cuadroCiudadBaresRecomendados.getSelectionModel().getSelectedItem();
+        Object colaboradorSeleccionado = cuadroColaboradorBaresRecomendados.getSelectionModel().getSelectedItem();
+
+        if (ciudadSeleccionada == null || colaboradorSeleccionado == null){
+            ventanaError("Se deben seleccionar la ciudad y el colaborador para realizar la búsqueda");
+        }
+        else{
+            try{
+                String nombreCiudad = ciudadSeleccionada.toString();
+                String buscarCiudades = "SELECT ID FROM CIUDADES WHERE NOMBRE = ?";
+                PreparedStatement buscarNombreCiudad = connection.prepareStatement(buscarCiudades);
+                buscarNombreCiudad.setString(1, nombreCiudad);
+                buscarNombreCiudad.executeQuery();
+
+                String nombreColaborador = colaboradorSeleccionado.toString();
+                String buscarColaboradores = "SELECT CORREO FROM COLABORADORES WHERE NOMBRE = ?";
+                PreparedStatement buscarNombreColaborador = connection.prepareStatement(buscarColaboradores);
+                buscarNombreColaborador.setString(1, nombreColaborador);
+                buscarNombreColaborador.executeQuery();
+
+                //ordenar comentarios por valoración
+            }
+            catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
     }
 
 
