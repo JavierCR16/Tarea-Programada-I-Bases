@@ -17,6 +17,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
 import javax.swing.table.*;
+import javax.xml.transform.Result;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
@@ -727,6 +728,13 @@ public class ControladorVentanaPrincipal implements Initializable {
             cuadroValoracionPlatillo.getSelectionModel().clearSelection();
 
         });
+
+        botonBaresRecomendados.setOnAction(event -> {
+            consultarBaresRecomendados();
+            cuadroCiudadBaresRecomendados.getSelectionModel().clearSelection();
+            cuadroColaboradorBaresRecomendados.getSelectionModel().clearSelection();
+            cuadroColaboradoresBaresRecomendadosCorreo.getSelectionModel().clearSelection();
+        });
     }
 
     public void establecerConexion() {
@@ -882,7 +890,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         String sqlCargaCiudades =
                 "BULK INSERT PROGRABASES1.dbo.CARGARCIUDADES" +
-                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\ciudades.csv'" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\output.csv'" +
                         " WITH( FIRSTROW =2, FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
         //************************************************************************************************************************************************************
         ArrayList<String> arregloCocina = new ArrayList<>();
@@ -897,12 +905,8 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         try {
             statement.execute(quitarReferenciaCiudades);
-            statement.execute(quitarLlavePrimaria);
-            statement.execute(quitarID);
             statement.executeUpdate(limpiarTablaCiudades);
             statement.executeUpdate(sqlCargaCiudades);
-            statement.execute(agregarIdIdentity);
-            statement.execute(hacerLlavePrimaria);
             statement.execute(agregarReferenciaCiudades);
 
 
@@ -1230,6 +1234,9 @@ public class ControladorVentanaPrincipal implements Initializable {
         columnaMesComentario.setCellValueFactory(new PropertyValueFactory<Comentario,String>("mes"));
         columnaCorreoColaboradorComentario.setCellValueFactory(new PropertyValueFactory<Comentario,String>("colaborador"));
         columnaNombreRestaurantesVegetarianos.setCellValueFactory(new PropertyValueFactory<Restaurante, String>("nombre"));
+        columnaAmigoBaresRecomendados.setCellValueFactory(new PropertyValueFactory<Restaurante,String>("amigo"));
+        columnaNombreBaresRecomendados.setCellValueFactory(new PropertyValueFactory<Restaurante,String>("nombre"));
+        columnaValoracionBaresRecomendados.setCellValueFactory(new PropertyValueFactory<Restaurante,String>("valoracion"));
 
     }
 
@@ -1731,7 +1738,7 @@ public class ControladorVentanaPrincipal implements Initializable {
                 ResultSet busquedaIdCiudad = buscarIdCiudad.executeQuery();
 
                 while (busquedaIdCiudad.next()) {
-                    idEncontrado = busquedaIdCiudad.getInt("ID");
+                    idEncontrado = Integer.parseInt(busquedaIdCiudad.getString("ID"));
                 }
 
             }
@@ -1742,7 +1749,7 @@ public class ControladorVentanaPrincipal implements Initializable {
                 ResultSet busquedaIDporNombre = buscarCiudadId.executeQuery();
 
                 while (busquedaIDporNombre.next()) {
-                    idEncontrado = busquedaIDporNombre.getInt("ID");
+                    idEncontrado = Integer.parseInt(busquedaIDporNombre.getString("ID"));
                 }
             }
 
@@ -1826,7 +1833,7 @@ public class ControladorVentanaPrincipal implements Initializable {
                     int idCiudadActualizar = buscarIdCiudad(ciudadNueva);
                     String actualizarCiudad = "UPDATE RESTAURANTES SET IDCIUDAD =? WHERE NOMBRE = ?";
                     PreparedStatement actualizarCiudadRestaurante = connection.prepareStatement(actualizarCiudad);
-                    actualizarCiudadRestaurante.setInt(1,idCiudadActualizar);
+                    actualizarCiudadRestaurante.setString(1,String.valueOf(idCiudadActualizar));
                     actualizarCiudadRestaurante.setString(2,restaurantePorActualizar);
                     actualizarCiudadRestaurante.executeUpdate();
 
@@ -2157,59 +2164,6 @@ public class ControladorVentanaPrincipal implements Initializable {
         cuadroDescripcionNuevoPlatillo.clear();
     }
 
-    public void consultarAmigosColaborador(){
-        Object colaboradorSeleccionado = cuadroBuscarAmigosColaborador.getSelectionModel().getSelectedItem();
-        Object correoColaboradorSeleccionado = cuadroBuscarAmigosColaboradorCorreo.getSelectionModel().getSelectedItem();
-
-        if(colaboradorSeleccionado ==null || correoColaboradorSeleccionado==null)
-            ventanaError("Debe seleccionar un colaborador");
-        else{
-            try {
-                ArrayList<Amigo> amigosColaborador = new ArrayList<>();
-                ArrayList<String> correosAmigos = new ArrayList<>();
-                String correoColaborador = correoColaboradorSeleccionado.toString();
-
-                String buscarCorreoAmigos = "SELECT CORREOAMIGO FROM AMIGOS WHERE CORREOCOLABORADOR =? AND ACEPTADO=?";
-                PreparedStatement buscarCorreoAmigosColaborador = connection.prepareStatement(buscarCorreoAmigos);
-                buscarCorreoAmigosColaborador.setString(1,correoColaborador);
-                buscarCorreoAmigosColaborador.setString(2,"SI");
-                ResultSet tuplesCorreoAmigos = buscarCorreoAmigosColaborador.executeQuery();
-
-                while(tuplesCorreoAmigos.next()){
-                    correosAmigos.add(tuplesCorreoAmigos.getString("CORREOAMIGO"));
-                }
-
-                String buscarCorreoOtroLado = "SELECT CORREOCOLABORADOR FROM AMIGOS WHERE CORREOAMIGO =? AND ACEPTADO=?";
-                PreparedStatement buscarCorreoAmigosColaboradorOtroLado = connection.prepareStatement(buscarCorreoOtroLado);
-                buscarCorreoAmigosColaboradorOtroLado.setString(1,correoColaborador);
-                buscarCorreoAmigosColaboradorOtroLado.setString(2,"SI");
-                ResultSet correoOtroLado = buscarCorreoAmigosColaboradorOtroLado.executeQuery();
-
-                while(correoOtroLado.next()){
-                    correosAmigos.add(correoOtroLado.getString("CORREOCOLABORADOR"));
-                }
-                for(int i =0;i<correosAmigos.size();i++){
-                    String nombreColaborador = buscarNombreColaborador(correosAmigos.get(i));
-                    amigosColaborador.add(new Amigo(nombreColaborador,correosAmigos.get(i)));
-                }
-
-
-
-                ObservableList<Amigo> listaAmigos = FXCollections.observableArrayList(amigosColaborador);
-
-                tablaAmigosColaborador.setItems(listaAmigos);
-
-
-            }
-            catch(SQLException e){
-                e.printStackTrace();
-            }
-
-
-        }
-
-    }
-
     public void actualizarTabConsultas(){
         ObservableList<String> colaboradoresDisponibles = colaboradoresTotales();
         ObservableList<String> restaurantesDisponibles = restaurantesTotales();
@@ -2522,7 +2476,7 @@ public class ControladorVentanaPrincipal implements Initializable {
                         "IDTIEMPOCOMIDA = ?";
 
                 PreparedStatement buscarRestaurantes = connection.prepareStatement(restaurantesSelecc);
-                buscarRestaurantes.setInt(1, idCiudad);
+                buscarRestaurantes.setString(1, String.valueOf(idCiudad));
                 buscarRestaurantes.setInt(2, idRangoPrecio);
                 buscarRestaurantes.setInt(3, idRestric);
                 buscarRestaurantes.setInt(4, idTiempoCom);
@@ -2544,28 +2498,177 @@ public class ControladorVentanaPrincipal implements Initializable {
         }
     }
 
+    public void consultarAmigosColaborador(){
+        Object colaboradorSeleccionado = cuadroBuscarAmigosColaborador.getSelectionModel().getSelectedItem();
+        Object correoColaboradorSeleccionado = cuadroBuscarAmigosColaboradorCorreo.getSelectionModel().getSelectedItem();
+
+        if(colaboradorSeleccionado ==null || correoColaboradorSeleccionado==null)
+            ventanaError("Debe seleccionar un colaborador");
+        else{
+            try {
+                ArrayList<Amigo> amigosColaborador = new ArrayList<>();
+                ArrayList<String> correosAmigos = new ArrayList<>();
+                String correoColaborador = correoColaboradorSeleccionado.toString();
+
+                String buscarCorreoAmigos = "SELECT CORREOAMIGO FROM AMIGOS WHERE CORREOCOLABORADOR =? AND ACEPTADO=?";
+                PreparedStatement buscarCorreoAmigosColaborador = connection.prepareStatement(buscarCorreoAmigos);
+                buscarCorreoAmigosColaborador.setString(1,correoColaborador);
+                buscarCorreoAmigosColaborador.setString(2,"SI");
+                ResultSet tuplesCorreoAmigos = buscarCorreoAmigosColaborador.executeQuery();
+
+                while(tuplesCorreoAmigos.next()){
+                    correosAmigos.add(tuplesCorreoAmigos.getString("CORREOAMIGO"));
+                }
+
+                String buscarCorreoOtroLado = "SELECT CORREOCOLABORADOR FROM AMIGOS WHERE CORREOAMIGO =? AND ACEPTADO=?";
+                PreparedStatement buscarCorreoAmigosColaboradorOtroLado = connection.prepareStatement(buscarCorreoOtroLado);
+                buscarCorreoAmigosColaboradorOtroLado.setString(1,correoColaborador);
+                buscarCorreoAmigosColaboradorOtroLado.setString(2,"SI");
+                ResultSet correoOtroLado = buscarCorreoAmigosColaboradorOtroLado.executeQuery();
+
+                while(correoOtroLado.next()){
+                    correosAmigos.add(correoOtroLado.getString("CORREOCOLABORADOR"));
+                }
+                for(int i =0;i<correosAmigos.size();i++){
+                    String nombreColaborador = buscarNombreColaborador(correosAmigos.get(i));
+                    amigosColaborador.add(new Amigo(nombreColaborador,correosAmigos.get(i)));
+                }
+
+
+
+                ObservableList<Amigo> listaAmigos = FXCollections.observableArrayList(amigosColaborador);
+
+                tablaAmigosColaborador.setItems(listaAmigos);
+
+
+            }
+            catch(SQLException e){
+                e.printStackTrace();
+            }
+
+
+        }
+
+    }
+
+    public ArrayList<String> listaAmigosColaborador(String correoColaborador){
+        ArrayList<String> correosAmigos = new ArrayList<>();
+        try {
+
+
+            String buscarCorreoAmigos = "SELECT CORREOAMIGO FROM AMIGOS WHERE CORREOCOLABORADOR =? AND ACEPTADO=?";
+            PreparedStatement buscarCorreoAmigosColaborador = connection.prepareStatement(buscarCorreoAmigos);
+            buscarCorreoAmigosColaborador.setString(1, correoColaborador);
+            buscarCorreoAmigosColaborador.setString(2, "SI");
+            ResultSet tuplesCorreoAmigos = buscarCorreoAmigosColaborador.executeQuery();
+
+            while (tuplesCorreoAmigos.next()) {
+                correosAmigos.add(tuplesCorreoAmigos.getString("CORREOAMIGO"));
+            }
+
+            String buscarCorreoOtroLado = "SELECT CORREOCOLABORADOR FROM AMIGOS WHERE CORREOAMIGO =? AND ACEPTADO=?";
+            PreparedStatement buscarCorreoAmigosColaboradorOtroLado = connection.prepareStatement(buscarCorreoOtroLado);
+            buscarCorreoAmigosColaboradorOtroLado.setString(1, correoColaborador);
+            buscarCorreoAmigosColaboradorOtroLado.setString(2, "SI");
+            ResultSet correoOtroLado = buscarCorreoAmigosColaboradorOtroLado.executeQuery();
+
+            while (correoOtroLado.next()) {
+                correosAmigos.add(correoOtroLado.getString("CORREOCOLABORADOR"));
+            }
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return correosAmigos;
+
+    }
+
     public void consultarBaresRecomendados(){
         Object ciudadSeleccionada = cuadroCiudadBaresRecomendados.getSelectionModel().getSelectedItem();
         Object colaboradorSeleccionado = cuadroColaboradorBaresRecomendados.getSelectionModel().getSelectedItem();
+        Object cuadroColaboradorCorreo = cuadroColaboradoresBaresRecomendadosCorreo.getSelectionModel().getSelectedItem();
 
-        if (ciudadSeleccionada == null || colaboradorSeleccionado == null){
-            ventanaError("Se deben seleccionar la ciudad y el colaborador para realizar la búsqueda");
+        if (ciudadSeleccionada == null || colaboradorSeleccionado == null || cuadroColaboradorCorreo==null){
+            ventanaError("Se deben seleccir colaborador para realizar la búsqueda");
         }
         else{
             try{
-                String nombreCiudad = ciudadSeleccionada.toString();
-                String buscarCiudades = "SELECT ID FROM CIUDADES WHERE NOMBRE = ?";
-                PreparedStatement buscarNombreCiudad = connection.prepareStatement(buscarCiudades);
-                buscarNombreCiudad.setString(1, nombreCiudad);
-                buscarNombreCiudad.executeQuery();
+                ArrayList<String> nombreBares = new ArrayList<>();
+                ArrayList<Restaurante> consulta = new ArrayList<>();
 
-                String nombreColaborador = colaboradorSeleccionado.toString();
-                String buscarColaboradores = "SELECT CORREO FROM COLABORADORES WHERE NOMBRE = ?";
-                PreparedStatement buscarNombreColaborador = connection.prepareStatement(buscarColaboradores);
-                buscarNombreColaborador.setString(1, nombreColaborador);
-                buscarNombreColaborador.executeQuery();
+                int idBar = buscarIdEstablecimiento("Bar");
+                int idCiudad = buscarIdCiudad(ciudadSeleccionada.toString());
+                String selectTuples = "SELECT com.VALORACION,com.CORREOCOLABORADOR,com.NOMBRERESTAURANTE FROM COMENTARIOS com," +
+                        "RESTAURANTES rest,COLABORADORES col,AMIGOS am WHERE IDCIUDAD= ? AND IDESTABLECIMIENTO =? AND rest.ID= com.NOMBRERESTAURANTE AND com.CORREOCOLABORADOR = col.CORREO AND col.CORREO =am.CORREOCOLABORADOR AND am.CORREOAMIGO=? AND am.ACEPTADO=?";
 
-                //ordenar comentarios por valoración
+                PreparedStatement busquedaUnLado = connection.prepareStatement(selectTuples);
+                busquedaUnLado.setString(1,String.valueOf(idCiudad));
+                busquedaUnLado.setInt(2,idBar);
+                busquedaUnLado.setString(3,cuadroColaboradorCorreo.toString());
+                busquedaUnLado.setString(4,"SI");
+
+                ResultSet busquedaUnLadoTuples = busquedaUnLado.executeQuery();
+                while(busquedaUnLadoTuples.next()){
+                    String nombreRest = buscarRestaurantePorId(busquedaUnLadoTuples.getInt("NOMBRERESTAURANTE"));
+                    consulta.add(new Restaurante (nombreRest,busquedaUnLadoTuples.getString("CORREOCOLABORADOR"),
+                            String.valueOf(busquedaUnLadoTuples.getInt("VALORACION"))));
+
+                }
+
+                String selectTuplesOtroLado = "SELECT com.VALORACION,com.CORREOCOLABORADOR,com.NOMBRERESTAURANTE FROM COMENTARIOS com," +
+                        "RESTAURANTES rest,COLABORADORES col,AMIGOS am WHERE IDCIUDAD= ? AND IDESTABLECIMIENTO =? AND rest.ID= com.NOMBRERESTAURANTE AND com.CORREOCOLABORADOR = col.CORREO AND col.CORREO =am.CORREOAMIGO AND am.CORREOCOLABORADOR=? AND am.ACEPTADO=?";
+
+                PreparedStatement busquedaOtroLado = connection.prepareStatement(selectTuplesOtroLado);
+                busquedaOtroLado.setString(1,String.valueOf(idCiudad));
+                busquedaOtroLado.setInt(2,idBar);
+                busquedaOtroLado.setString(3,cuadroColaboradorCorreo.toString());
+                busquedaOtroLado.setString(4,"SI");
+
+                ResultSet busquedaOtroLadoTuples = busquedaOtroLado.executeQuery();
+                while(busquedaOtroLadoTuples.next()){
+                    String nombreRest = buscarRestaurantePorId(busquedaOtroLadoTuples.getInt("NOMBRERESTAURANTE"));
+                    consulta.add(new Restaurante (nombreRest,busquedaOtroLadoTuples.getString("CORREOCOLABORADOR"),
+                            String.valueOf(busquedaOtroLadoTuples.getInt("VALORACION"))));
+
+                }
+
+                /*
+                String selectRestaurantesQueSonBares = "SELECT ID FROM RESTAURANTES  WHERE  IDCIUDAD =? AND IDESTABLECIMIENTO =?";
+                PreparedStatement buscarRestaurantes = connection.prepareStatement(selectRestaurantesQueSonBares);
+                buscarRestaurantes.setString(1,String.valueOf(idCiudad));
+                buscarRestaurantes.setInt(2,idBar);
+                ResultSet busquedaBares = buscarRestaurantes.executeQuery();
+                while(busquedaBares.next()){
+                    nombreBares.add(String.valueOf(busquedaBares.getInt("ID")));
+                }
+
+                ArrayList<String> amigosDelColaboradorCorreos = listaAmigosColaborador(cuadroColaboradorCorreo.toString());
+                String seleccionarComentarios = "SELECT VALORACION,CORREOCOLABORADOR,NOMBRERESTAURANTE FROM COMENTARIOS WHERE NOMBRERESTAURANTE =?" +
+                        "AND CORREOCOLABORADOR =?";
+                for(int i=0;i<amigosDelColaboradorCorreos.size();i++){
+                    for(int j=0;j<nombreBares.size();j++){
+                        PreparedStatement busquedaTotal = null;
+                        ResultSet extraerBares = null;
+
+                        busquedaTotal = connection.prepareStatement(seleccionarComentarios);
+                        busquedaTotal.setInt(1,Integer.parseInt(nombreBares.get(j)));
+                        busquedaTotal.setString(2,amigosDelColaboradorCorreos.get(i));
+                        extraerBares = busquedaTotal.executeQuery();
+                        while(extraerBares.next()){
+                            String nombreRest = buscarRestaurantePorId(extraerBares.getInt("NOMBRERESTAURANTE"));
+                            consulta.add(new Restaurante (nombreRest,extraerBares.getString("CORREOCOLABORADOR"),
+                                    String.valueOf(extraerBares.getInt("VALORACION"))));
+                        }
+                        extraerBares.close();
+                        busquedaTotal.close();
+
+                    }
+                }*/
+                ObservableList<Restaurante> listaConsultada = FXCollections.observableArrayList(consulta);
+                tablaBaresRecomendados.setItems(listaConsultada);
+
+
             }
             catch(SQLException e){
                 e.printStackTrace();
