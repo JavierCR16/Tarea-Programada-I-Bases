@@ -1,6 +1,7 @@
 package Interfaz;
 
 import Auxiliares.Amigo;
+import Auxiliares.Comentario;
 import Auxiliares.Restaurante;
 import Auxiliares.SolicitudAmistad;
 import javafx.collections.FXCollections;
@@ -385,6 +386,26 @@ public class ControladorVentanaPrincipal implements Initializable {
     @FXML
     ComboBox cuadroColaboradorPlatillosValoradosCorreo;
 
+    @FXML
+    TableColumn columnaRestauranteComentario;
+
+    @FXML
+    TableColumn columnaComentarioComentario;
+
+    @FXML
+    TableColumn columnaAnnoComentario;
+
+    @FXML
+    TableColumn columnaMesComentario;
+
+    @FXML
+    ComboBox cuadroValoracionPlatillo;
+
+    @FXML
+    TableColumn columnaCorreoColaboradorComentario;
+
+    Comentario comentarioSeleccionado;
+
     Connection connection;
 
     Statement statement;
@@ -410,6 +431,7 @@ public class ControladorVentanaPrincipal implements Initializable {
         botonLoguear.setOnAction(event -> {
             loguearUsuario();
             cuadroIngresarUsuario.clear();
+            limpiarTabComentarios();
         });
 
         botonRefrescarColaboradores.setOnAction(event -> {
@@ -561,32 +583,12 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         cuadroRestauranteEliminarPlatillo.setOnAction(event -> {
             cuadroPlatilloEliminarPlatillo.getItems().removeAll(cuadroPlatilloEliminarPlatillo.getItems());
-            if (cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem() != null) {
-                try {
-                    ArrayList<String> platillos = new ArrayList<>();
-                    String restauranteEscogido = cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem().toString();
-
-                    int buscarIdRestaurante = buscarIdRestaurante(restauranteEscogido);
-                    String buscarPlatillosAsociados = "SELECT NOMBRE FROM  PLATILLOS WHERE IDRESTAURANTE = ?";
-                    PreparedStatement busquedaPlatillos = connection.prepareStatement(buscarPlatillosAsociados);
-
-                    busquedaPlatillos.setInt(1, buscarIdRestaurante);
-                    ResultSet extraccionDePlatillos = busquedaPlatillos.executeQuery();
-
-                    while (extraccionDePlatillos.next()) {
-                        platillos.add(extraccionDePlatillos.getString("NOMBRE"));
-                    }
-                    ObservableList<String> listaPlatillos = FXCollections.observableArrayList(platillos);
-
-                    cuadroPlatilloEliminarPlatillo.setItems(listaPlatillos);
-
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-
+            if(cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem() !=null) {
+                String restauranteEscogido = cuadroRestauranteEliminarPlatillo.getSelectionModel().getSelectedItem().toString();
+                ObservableList<String> listaPlatillos = platillosRestaurantes(restauranteEscogido);
+                cuadroPlatilloEliminarPlatillo.setItems(listaPlatillos);
             }
+
         });
 
         botonBuscarAmigosColaborador.setOnAction(event -> {
@@ -705,7 +707,26 @@ public class ControladorVentanaPrincipal implements Initializable {
             }
         });
 
+        botonRefrescarRestaurantesComentarios.setOnAction(event -> {
+            actualizarTabComentarios();
+        });
 
+        botonAgregarComentario.setOnAction(event -> {
+            agregarComentario();
+            limpiarInformacionComentario();
+        });
+
+        botonAceptarRestauranteComentario.setOnAction(event ->{
+            settearPlatillosRestauranteComentario();
+        });
+
+        agregarComentarioPlatillo.setOnAction(event -> {
+            agregarComentarioPlatillo();
+            cuadroComentarioPlatillo.clear();
+            cuadroPlatillosRestaurante.getSelectionModel().clearSelection();
+            cuadroValoracionPlatillo.getSelectionModel().clearSelection();
+
+        });
     }
 
     public void establecerConexion() {
@@ -837,7 +858,7 @@ public class ControladorVentanaPrincipal implements Initializable {
         String sqlCargarPaises =
 
                 "BULK INSERT PROGRABASES1.dbo.CARGARPAISES" +
-                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\paises.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE = 'ACP')";
 
         //***********************************************************************************************************************************************************
@@ -848,7 +869,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         String sqlCargarTiposCocina =
                 "BULK INSERT PROGRABASES1.dbo.CARGARTIPOSCOCINA" +
-                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\tiposCocina.csv'" +
                         " WITH( FIRSTROW = 2,FIELDTERMINATOR = '',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
         //************************************************************************************************************************************************************
         String quitarReferenciaCiudades = "ALTER TABLE RESTAURANTES DROP CONSTRAINT FK_RESTAURANTES_CARGARCIUDADES";
@@ -861,7 +882,7 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         String sqlCargaCiudades =
                 "BULK INSERT PROGRABASES1.dbo.CARGARCIUDADES" +
-                        " FROM 'C:\\Users\\Randall\\Desktop\\PrograBases\\Tarea-Programada-I-Bases\\ArchivosCargar\\ciudades.csv'" +
+                        " FROM 'C:\\Users\\paula_000\\Desktop\\Tarea Programada Bases de Datos I\\Tarea-Programada-I-Bases\\ArchivosCargar\\ciudades.csv'" +
                         " WITH( FIRSTROW =2, FIELDTERMINATOR = ',',ROWTERMINATOR = '\r\n', CODEPAGE='ACP')";
         //************************************************************************************************************************************************************
         ArrayList<String> arregloCocina = new ArrayList<>();
@@ -1034,6 +1055,9 @@ public class ControladorVentanaPrincipal implements Initializable {
         agregarComentarioValoracion.getItems().addAll("1", "2", "3", "4", "5");
         agregarComentarioMes.getItems().addAll("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio"
                 , "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre");
+        agregarComentarioAnno.getItems().addAll("2016","2015","2014","2013","2012","2011","2010","2009","2008","2007"
+        ,"2006","2005","2004","2003","2002","2001","2000");
+        cuadroValoracionPlatillo.getItems().addAll("1", "2", "3", "4", "5");
 
     }
 
@@ -1200,7 +1224,13 @@ public class ControladorVentanaPrincipal implements Initializable {
         columnaCorreoSolicitud.setCellValueFactory(new PropertyValueFactory<SolicitudAmistad, String>("correo"));
         columnaNombreAmigoColaborador.setCellValueFactory(new PropertyValueFactory<Amigo,String>("nombreAmigo"));
         columnaCorreoAmigoColaborador.setCellValueFactory(new PropertyValueFactory<Amigo,String>("correoAmigo"));
+        columnaRestauranteComentario.setCellValueFactory(new PropertyValueFactory<Comentario,String>("restaurante"));
+        columnaComentarioComentario.setCellValueFactory(new PropertyValueFactory<Comentario,String>("comentario"));
+        columnaAnnoComentario.setCellValueFactory(new PropertyValueFactory<Comentario,String>("anno"));
+        columnaMesComentario.setCellValueFactory(new PropertyValueFactory<Comentario,String>("mes"));
+        columnaCorreoColaboradorComentario.setCellValueFactory(new PropertyValueFactory<Comentario,String>("colaborador"));
         columnaNombreRestaurantesVegetarianos.setCellValueFactory(new PropertyValueFactory<Restaurante, String>("nombre"));
+
     }
 
     public void refrescarSolicitudesAmistad() {
@@ -2066,33 +2096,36 @@ public class ControladorVentanaPrincipal implements Initializable {
         }
         else{
             try{
+                int ultimoId = 0;
                 int idRestaurante = buscarIdRestaurante(restauranteAgregarPlatillo.toString());
                 String agregarPlatillo = "INSERT INTO PLATILLOS (NOMBRE,IDRESTAURANTE,DESCRIPCION) VALUES (?,?,?)";
-                PreparedStatement insercionPlatillo = connection.prepareStatement(agregarPlatillo);
+                PreparedStatement insercionPlatillo = connection.prepareStatement(agregarPlatillo,Statement.RETURN_GENERATED_KEYS);
                 insercionPlatillo.setString(1,nombrePlatillo);
                 insercionPlatillo.setInt(2,idRestaurante);
                 insercionPlatillo.setString(3,descripcionPlatillo);
                 insercionPlatillo.executeUpdate();
 
-                String insertarEnContienePlatillos = "INSERT INTO CONTIENEPLATILLOS (IDRESTAURANTE,NOMBREPLATILLO) VALUES (?,?)";
+                ResultSet ultimoIdPlatillo = insercionPlatillo.getGeneratedKeys();
+
+                while(ultimoIdPlatillo.next()){
+                    ultimoId = ultimoIdPlatillo.getInt(1);
+                    System.out.println("ID ultimo platillo:" + ultimoId);
+                }
+
+                String insertarEnContienePlatillos = "INSERT INTO CONTIENEPLATILLOS (IDRESTAURANTE,IDPLATILLO) VALUES (?,?)";
                 PreparedStatement insercionContienePlatillos = connection.prepareStatement(insertarEnContienePlatillos);
                 insercionContienePlatillos.setInt(1,idRestaurante);
-                insercionContienePlatillos.setString(2,nombrePlatillo);
+                insercionContienePlatillos.setInt(2,ultimoId);
                 insercionContienePlatillos.executeUpdate();
 
             }
             catch(SQLException e){
+                e.printStackTrace();
                 ventanaError("El platillo ingresado ya existe. Intente de nuevo");
             }
 
 
         }
-    }
-
-    public void limpiarInformacionAgregarPlatillo(){
-        cuadroRestaurantesPlatillos.getSelectionModel().clearSelection();
-        cuadroNombreNuevoPlatillo.clear();
-        cuadroDescripcionNuevoPlatillo.clear();
     }
 
     public void eliminarPlatillo(){
@@ -2116,6 +2149,12 @@ public class ControladorVentanaPrincipal implements Initializable {
 
         }
 
+    }
+
+    public void limpiarInformacionAgregarPlatillo(){
+        cuadroRestaurantesPlatillos.getSelectionModel().clearSelection();
+        cuadroNombreNuevoPlatillo.clear();
+        cuadroDescripcionNuevoPlatillo.clear();
     }
 
     public void consultarAmigosColaborador(){
@@ -2239,6 +2278,232 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     }
 
+    public void actualizarTabComentarios(){
+        ObservableList<String> restaurantesDisponibles = restaurantesTotales();
+        agregarComentarioRestaurante.setItems(restaurantesDisponibles);
+        try {
+            String buscarComentarios = "SELECT NOMBRERESTAURANTE,TEXTO,ANHO,MES,CORREOCOLABORADOR FROM COMENTARIOS";
+            ArrayList<Comentario> comentarios = new ArrayList<>();
+            ResultSet busquedaComentarios = statement.executeQuery(buscarComentarios);
+
+
+            while(busquedaComentarios.next()){
+                String buscarNombreRestaurant = buscarRestaurantePorId(busquedaComentarios.getInt("NOMBRERESTAURANTE"));
+                comentarios.add(new Comentario(buscarNombreRestaurant,busquedaComentarios.getString("TEXTO"),
+                        String.valueOf(busquedaComentarios.getInt("ANHO")),busquedaComentarios.getString("MES"),busquedaComentarios.getString("CORREOCOLABORADOR")));
+            }
+            ObservableList<Comentario> listaComentarios = FXCollections.observableArrayList(comentarios);
+            tablaRestaurantesComentarios.setItems(listaComentarios);
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public String buscarRestaurantePorId(int id){
+        String restauranteEncontrado = "";
+
+        try{
+            String buscarNombreRestaurante = "SELECT NOMBRE FROM RESTAURANTES WHERE ID=?";
+            PreparedStatement buscarRestaurante = connection.prepareStatement(buscarNombreRestaurante);
+            buscarRestaurante.setInt(1,id);
+            ResultSet busquedaRestaurante = buscarRestaurante.executeQuery();
+
+            while(busquedaRestaurante.next()){
+                restauranteEncontrado= busquedaRestaurante.getString("NOMBRE");
+            }
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+
+        }
+        return restauranteEncontrado;
+    }
+
+    public void agregarComentario(){
+        Object nombreRestaurante = agregarComentarioRestaurante.getSelectionModel().getSelectedItem();
+        Object mesComentario = agregarComentarioMes.getSelectionModel().getSelectedItem();
+        Object annoComentario = agregarComentarioAnno.getSelectionModel().getSelectedItem();
+        Object clasificacionCliente = agregarComentarioClasificacionCliente.getSelectionModel().getSelectedItem();
+        Object valoracion = agregarComentarioValoracion.getSelectionModel().getSelectedItem();
+        String opinion = agregarComentarioOpinion.getText();
+
+        if(nombreRestaurante==null || mesComentario==null ||annoComentario==null || clasificacionCliente==null || valoracion ==null ||
+                opinion.equals("") ||correoColaboradorLogueado.equals(""))
+            ventanaError("Debe ingresar todos los datos del comentario o estar logueado como colaborador");
+
+        else{
+            try {
+                int idRestaurante = buscarIdRestaurante(nombreRestaurante.toString());
+                String insertarComentario = "INSERT INTO COMENTARIOS (CORREOCOLABORADOR,TEXTO,VALORACION,ANHO,MES,CLASIFICACIONCLIENTE,NOMBRERESTAURANTE)" +
+                        "VALUES (?,?,?,?,?,?,?)";
+                PreparedStatement insercionComentario = connection.prepareStatement(insertarComentario);
+                insercionComentario.setString(1,correoColaboradorLogueado);
+                insercionComentario.setString(2,opinion);
+                insercionComentario.setInt(3,Integer.parseInt(valoracion.toString()));
+                insercionComentario.setInt(4,Integer.parseInt(annoComentario.toString()));
+                insercionComentario.setString(5,mesComentario.toString());
+                insercionComentario.setString(6,clasificacionCliente.toString());
+                insercionComentario.setInt(7,idRestaurante);
+
+                insercionComentario.executeUpdate();
+
+            }
+            catch(SQLException e){
+                ventanaError("No puede ingresar mas de un comentario de un restaurante el mismo mes");
+            }
+
+
+        }
+
+    }
+
+    public void limpiarInformacionComentario(){
+        agregarComentarioRestaurante.getSelectionModel().clearSelection();
+        agregarComentarioMes.getSelectionModel().clearSelection();
+        agregarComentarioValoracion.getSelectionModel().clearSelection();
+        agregarComentarioAnno.getSelectionModel().clearSelection();
+        agregarComentarioClasificacionCliente.getSelectionModel().clearSelection();
+        agregarComentarioOpinion.clear();
+    }
+
+    public void settearPlatillosRestauranteComentario(){
+        if(tablaRestaurantesComentarios.getSelectionModel().getSelectedItem() ==null) {
+            ventanaError("No hay comentarios seleccionados");
+            cuadroPlatillosRestaurante.getItems().removeAll(cuadroPlatillosRestaurante.getItems());
+        }
+        else{
+            Comentario comentario = (Comentario) tablaRestaurantesComentarios.getSelectionModel().getSelectedItem();
+            comentarioSeleccionado= comentario;
+            ObservableList<String> platillosRestaurante = platillosRestaurantes(comentario.getRestaurante());
+            cuadroPlatillosRestaurante.setItems(platillosRestaurante);
+        }
+
+
+    }
+
+    public ObservableList<String> platillosRestaurantes(String nombreRestaurante){
+        ObservableList<String> listaPlatillos = null;
+        try {
+            ArrayList<String> platillos = new ArrayList<>();
+
+            int buscarIdRestaurante = buscarIdRestaurante(nombreRestaurante);
+            String buscarPlatillosAsociados = "SELECT NOMBRE FROM  PLATILLOS WHERE IDRESTAURANTE = ?";
+            PreparedStatement busquedaPlatillos = connection.prepareStatement(buscarPlatillosAsociados);
+
+            busquedaPlatillos.setInt(1,buscarIdRestaurante);
+            ResultSet extraccionDePlatillos = busquedaPlatillos.executeQuery();
+
+            while (extraccionDePlatillos.next()){
+                platillos.add(extraccionDePlatillos.getString("NOMBRE"));
+            }
+            listaPlatillos = FXCollections.observableArrayList(platillos);
+
+            cuadroPlatilloEliminarPlatillo.setItems(listaPlatillos);
+
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return listaPlatillos;
+    }
+
+    public void agregarComentarioPlatillo(){
+
+        Object platilloSeleccionado = cuadroPlatillosRestaurante.getSelectionModel().getSelectedItem();
+        String comentarioPlatillo = cuadroComentarioPlatillo.getText();
+        Object valoracionPlatillo = cuadroValoracionPlatillo.getSelectionModel().getSelectedItem();
+
+        if(platilloSeleccionado==null || comentarioSeleccionado==null ||comentarioPlatillo.equals("") || valoracionPlatillo==null ||correoColaboradorLogueado.equals(""))
+            ventanaError("Debe ingresar todos los datos del comentario, seleccionar un comentario para asociar y debe estar logueado");
+        else{
+            try{
+                int idRestaurante =  buscarIdRestaurante(comentarioSeleccionado.getRestaurante());
+                String comentario = comentarioSeleccionado.getComentario();
+                String anno = comentarioSeleccionado.getAnno();
+                String mes = comentarioSeleccionado.getMes();
+                String colaborador = comentarioSeleccionado.getColaborador();
+
+                int idComentarioAsociar = devolverIdAsociadoComentario(idRestaurante,comentario,anno,mes,colaborador);
+                int idPlatillo = buscarIdPlatillo(platilloSeleccionado.toString(),idRestaurante);
+                String insertarEnComentarioPlatillos = "INSERT INTO COMENTARIOSPLATILLOS (IDCOMENTARIO,TEXTO,IDPLATILLO,VALORACION)" +
+                        "VALUES(?,?,?,?)";
+
+                PreparedStatement insercionComentarioPlatillo = connection.prepareStatement(insertarEnComentarioPlatillos);
+                insercionComentarioPlatillo.setInt(1,idComentarioAsociar);
+                insercionComentarioPlatillo.setString(2,comentarioPlatillo);
+                insercionComentarioPlatillo.setInt(3,idPlatillo);
+                insercionComentarioPlatillo.setInt(4,Integer.parseInt(valoracionPlatillo.toString()));
+
+                insercionComentarioPlatillo.executeUpdate();
+
+            }
+            catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
+
+
+    }
+
+    public int devolverIdAsociadoComentario(int restaurante, String comentario, String anno, String mes, String colaborador){
+        int idBuscado = 0;
+        try{
+            String buscarId = "SELECT ID FROM COMENTARIOS WHERE NOMBRERESTAURANTE =? AND TEXTO =? AND ANHO=? AND MES=? AND CORREOCOLABORADOR=?";
+            PreparedStatement buscarIdComentario = connection.prepareStatement(buscarId);
+            buscarIdComentario.setInt(1,restaurante);
+            buscarIdComentario.setString(2,comentario);
+            buscarIdComentario.setInt(3,Integer.parseInt(anno));
+            buscarIdComentario.setString(4,mes);
+            buscarIdComentario.setString(5,colaborador);
+
+            ResultSet busquedaId = buscarIdComentario.executeQuery();
+            while(busquedaId.next()){
+                idBuscado = busquedaId.getInt("ID");
+            }
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return idBuscado;
+
+    }
+
+    public void limpiarTabComentarios(){
+
+        agregarComentarioRestaurante.getSelectionModel().clearSelection();
+        agregarComentarioMes.getSelectionModel().clearSelection();
+        agregarComentarioValoracion.getSelectionModel().clearSelection();
+        agregarComentarioAnno.getSelectionModel().clearSelection();
+        agregarComentarioClasificacionCliente.getSelectionModel().clearSelection();
+        agregarComentarioOpinion.clear();
+        cuadroComentarioPlatillo.clear();
+        cuadroPlatillosRestaurante.getSelectionModel().clearSelection();
+        cuadroValoracionPlatillo.getSelectionModel().clearSelection();
+    }
+
+    public int buscarIdPlatillo(String nombre, int idRestaurante){
+        int idBuscado = 0;
+        try{
+            String buscarId = "SELECT ID FROM PLATILLOS WHERE NOMBRE =? AND IDRESTAURANTE =?";
+            PreparedStatement idPlatillo = connection.prepareStatement(buscarId);
+            idPlatillo.setString(1,nombre);
+            idPlatillo.setInt(2,idRestaurante);
+            ResultSet busquedaId = idPlatillo.executeQuery();
+
+            while(busquedaId.next()){
+                idBuscado = busquedaId.getInt("ID");
+            }
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return idBuscado;
+    }
+
     public void consultarRestaurantesVegetarianos(){
         Object ciudadSeleccionada = cuadroCiudadRestaurantesVegetarianos.getSelectionModel().getSelectedItem();
         if(ciudadSeleccionada == null)
@@ -2307,6 +2572,5 @@ public class ControladorVentanaPrincipal implements Initializable {
             }
         }
     }
-
 
 }
