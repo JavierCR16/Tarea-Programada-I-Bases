@@ -2,9 +2,6 @@ package Auxiliares;
 
 import javafx.beans.property.SimpleStringProperty;
 
-/**
- * Created by paula_000 on 27/4/2017.
- */
 public class Comentario {
 
     SimpleStringProperty restaurante;
@@ -14,12 +11,20 @@ public class Comentario {
     SimpleStringProperty mes;
     SimpleStringProperty colaborador;
 
-    public Comentario(String pRestaurante, String pComentario,String pAnno, String pMes,String pColaborador){
+    SimpleStringProperty texto;
+
+    public Comentario(String pRestaurante, String pComentario, String pAnno, String pMes, String pColaborador){
         restaurante = new SimpleStringProperty(pRestaurante);
         comentario = new SimpleStringProperty(pComentario);
         anno = new SimpleStringProperty(pAnno);
         mes = new SimpleStringProperty(pMes);
-        colaborador= new SimpleStringProperty(pColaborador);
+        colaborador = new SimpleStringProperty(pColaborador);
+    }
+
+    public Comentario(String pAnno, String pMes, String pTexto){
+        anno = new SimpleStringProperty(pAnno);
+        mes = new SimpleStringProperty(pMes);
+        texto = new SimpleStringProperty(pTexto);
     }
 
     public String getRestaurante() {
@@ -82,7 +87,16 @@ public class Comentario {
         this.colaborador.set(colaborador);
     }
 
+    public String getTexto(){
+        return texto.get();
+    }
 
+    public SimpleStringProperty textoProperty(){
+        return texto;
+    }
 
+    public void setTexto(String texto){
+        this.texto.set(texto);
+    }
 
 }

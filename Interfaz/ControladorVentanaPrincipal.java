@@ -1,9 +1,6 @@
 package Interfaz;
 
-import Auxiliares.Amigo;
-import Auxiliares.Comentario;
-import Auxiliares.Restaurante;
-import Auxiliares.SolicitudAmistad;
+import Auxiliares.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -609,6 +606,20 @@ public class ControladorVentanaPrincipal implements Initializable {
         botonBuscarRestaurantesVegetarianos.setOnAction(event ->{
             consultarRestaurantesVegetarianos();
             cuadroCiudadRestaurantesVegetarianos.getSelectionModel().clearSelection();
+        });
+
+        botonBaresRecomendados.setOnAction(event ->{
+            consultarBaresRecomendados();
+            cuadroCiudadBaresRecomendados.getSelectionModel().clearSelection();
+            cuadroColaboradorBaresRecomendados.getSelectionModel().clearSelection();
+            cuadroColaboradoresBaresRecomendadosCorreo.getSelectionModel().clearSelection();
+        });
+
+        botonPlatillosValorados.setOnAction(event ->{
+            consultarComentariosPlatillos();
+            cuadroRestaurantePlatillosValorados.getSelectionModel().clearSelection();
+            cuadroColaboradorPlatillosValorados.getSelectionModel().clearSelection();
+            cuadroColaboradorPlatillosValoradosCorreo.getSelectionModel().clearSelection();
         });
 
         cuadroBuscarAmigosColaborador.setOnAction(event->{
@@ -2458,6 +2469,41 @@ public class ControladorVentanaPrincipal implements Initializable {
         return idBuscado;
     }
 
+    public void consultarComentariosRestaurante(){
+        Object restauranteSeleccionado = cuadroNombreComentariosRestaurante.getSelectionModel().getSelectedItem();
+        Object ciudadSeleccionada = cuadroCiudadComentariosRestaurante.getSelectionModel().getSelectedItem();
+        if (restauranteSeleccionado == null || ciudadSeleccionada == null)
+            ventanaError("Se deben seleccionar el nombre del restaurante y la ciudad");
+        else{
+            try{
+                ArrayList<Comentario> comentarios = new ArrayList<>();
+                String nombreRestaurante = restauranteSeleccionado.toString();
+                //String nombreCiudad = ciudadSeleccionada.toString();
+                //int idCiudad = buscarIdCiudad(nombreCiudad);
+                int idRestaurante = buscarIdRestaurante(nombreRestaurante);
+                String comentariosRestaurante = "SELECT ANHO, MES, TEXTO FROM COMENTARIOS WHERE IDRESTAURANTE = ?";
+                PreparedStatement buscarComentarios = connection.prepareStatement(comentariosRestaurante);
+                buscarComentarios.setInt(1, idRestaurante);
+                ResultSet fechasComentarios = buscarComentarios.executeQuery();
+
+                while (fechasComentarios.next()){
+                    comentarios.add(new Comentario (fechasComentarios.getString("ANHO"), fechasComentarios.getString("MES"),fechasComentarios.getString("TEXTO")));
+                }
+
+                ArrayList<Comentario> diezComentarios = new ArrayList<>();
+                //ordenar por fecha, meter en arraylist auxiliar
+
+                ObservableList<Comentario> comentariosPorFecha = FXCollections.observableArrayList(comentarios);
+                tablaComentariosRestaurante.setItems(comentariosPorFecha);
+
+
+            }
+            catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void consultarRestaurantesVegetarianos(){
         Object ciudadSeleccionada = cuadroCiudadRestaurantesVegetarianos.getSelectionModel().getSelectedItem();
         if(ciudadSeleccionada == null)
@@ -2633,38 +2679,6 @@ public class ControladorVentanaPrincipal implements Initializable {
 
                 }
 
-                /*
-                String selectRestaurantesQueSonBares = "SELECT ID FROM RESTAURANTES  WHERE  IDCIUDAD =? AND IDESTABLECIMIENTO =?";
-                PreparedStatement buscarRestaurantes = connection.prepareStatement(selectRestaurantesQueSonBares);
-                buscarRestaurantes.setString(1,String.valueOf(idCiudad));
-                buscarRestaurantes.setInt(2,idBar);
-                ResultSet busquedaBares = buscarRestaurantes.executeQuery();
-                while(busquedaBares.next()){
-                    nombreBares.add(String.valueOf(busquedaBares.getInt("ID")));
-                }
-
-                ArrayList<String> amigosDelColaboradorCorreos = listaAmigosColaborador(cuadroColaboradorCorreo.toString());
-                String seleccionarComentarios = "SELECT VALORACION,CORREOCOLABORADOR,NOMBRERESTAURANTE FROM COMENTARIOS WHERE NOMBRERESTAURANTE =?" +
-                        "AND CORREOCOLABORADOR =?";
-                for(int i=0;i<amigosDelColaboradorCorreos.size();i++){
-                    for(int j=0;j<nombreBares.size();j++){
-                        PreparedStatement busquedaTotal = null;
-                        ResultSet extraerBares = null;
-
-                        busquedaTotal = connection.prepareStatement(seleccionarComentarios);
-                        busquedaTotal.setInt(1,Integer.parseInt(nombreBares.get(j)));
-                        busquedaTotal.setString(2,amigosDelColaboradorCorreos.get(i));
-                        extraerBares = busquedaTotal.executeQuery();
-                        while(extraerBares.next()){
-                            String nombreRest = buscarRestaurantePorId(extraerBares.getInt("NOMBRERESTAURANTE"));
-                            consulta.add(new Restaurante (nombreRest,extraerBares.getString("CORREOCOLABORADOR"),
-                                    String.valueOf(extraerBares.getInt("VALORACION"))));
-                        }
-                        extraerBares.close();
-                        busquedaTotal.close();
-
-                    }
-                }*/
                 ObservableList<Restaurante> listaConsultada = FXCollections.observableArrayList(consulta);
                 tablaBaresRecomendados.setItems(listaConsultada);
 
@@ -2674,6 +2688,42 @@ public class ControladorVentanaPrincipal implements Initializable {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void consultarComentariosPlatillos(){
+        Object restauranteSeleccionado = cuadroRestaurantePlatillosValorados.getSelectionModel().getSelectedItem();
+        Object colaboradorSeleccionado = cuadroColaboradorPlatillosValorados.getSelectionModel().getSelectedItem();
+        Object correoSeleccionado = cuadroColaboradorPlatillosValoradosCorreo.getSelectionModel().getSelectedItem();
+        if (restauranteSeleccionado == null || colaboradorSeleccionado == null || correoSeleccionado == null)
+            ventanaError("Se deben seleccionar el nombre del restaurante y el colaborador, junto a su correo");
+        else{
+            try{
+                ArrayList<ComentarioPlatillo> valoracionPlatillos = new ArrayList<>();
+                String nombreRestaurante = restauranteSeleccionado.toString();
+                String nombreColaborador = colaboradorSeleccionado.toString();
+                String correoColaborador = correoSeleccionado.toString();
+                int idRestaurante = buscarIdRestaurante(nombreRestaurante);
+                String comentariosPlatillos = "SELECT IDPLATILLO, VALORACION FROM COMENTARIOSPLATILLOS, PLATILLOS" +
+                    "WHERE IDRESTAURANTE = ?";
+                PreparedStatement buscarComentarios = connection.prepareStatement(comentariosPlatillos);
+                buscarComentarios.setInt(1, idRestaurante);
+                ResultSet valoraciones = buscarComentarios.executeQuery();
+
+                while (valoraciones.next()){
+                    valoracionPlatillos.add(new ComentarioPlatillo (valoraciones.getString("IDPLATILLO"), valoraciones.getString("VALORACION")));
+                }
+
+                //ordenar por valoracion
+
+                ObservableList<ComentarioPlatillo> platillosPorValoracion = FXCollections.observableArrayList(valoracionPlatillos);
+                tablaPlatillosValorados.setItems(platillosPorValoracion);
+
+            }
+            catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
+
     }
 
 }
