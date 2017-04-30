@@ -2,16 +2,21 @@ package Auxiliares;
 
 import javafx.beans.property.SimpleStringProperty;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class Comentario {
 
-    SimpleStringProperty restaurante;
-    SimpleStringProperty comentario;
+   public SimpleStringProperty restaurante;
+   public SimpleStringProperty comentario;
+   public SimpleStringProperty fecha;
+   public SimpleStringProperty anno;
+   public SimpleStringProperty mes;
+   public SimpleStringProperty colaborador;
+   public SimpleStringProperty texto;
+   public Date fechaUsar;
 
-    SimpleStringProperty anno;
-    SimpleStringProperty mes;
-    SimpleStringProperty colaborador;
-
-    SimpleStringProperty texto;
 
     public Comentario(String pRestaurante, String pComentario, String pAnno, String pMes, String pColaborador){
         restaurante = new SimpleStringProperty(pRestaurante);
@@ -21,9 +26,14 @@ public class Comentario {
         colaborador = new SimpleStringProperty(pColaborador);
     }
 
-    public Comentario(String pAnno, String pMes, String pTexto){
-        anno = new SimpleStringProperty(pAnno);
-        mes = new SimpleStringProperty(pMes);
+    public Comentario(String pFecha,String pTexto){
+        try {
+            fechaUsar = new SimpleDateFormat("MMM-yyyy", Locale.ENGLISH)
+                    .parse(pFecha);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
         texto = new SimpleStringProperty(pTexto);
     }
 
@@ -97,6 +107,65 @@ public class Comentario {
 
     public void setTexto(String texto){
         this.texto.set(texto);
+    }
+
+    public String getFecha() {
+        return fecha.get();
+    }
+
+    public SimpleStringProperty fechaProperty() {
+        return fecha;
+    }
+
+    public void setFecha(String fecha) {
+        this.fecha.set(fecha);
+    }
+
+    public SimpleStringProperty settearFecha(Date fecha){
+       String cambiarFecha =  new SimpleDateFormat("MMM-yyyy", Locale.ENGLISH).format(fecha);
+       String anno = cambiarFecha.substring(cambiarFecha.indexOf("-"),cambiarFecha.length());
+       String mes = cambiarFecha.substring(0,cambiarFecha.indexOf("-"));
+       String nuevaFecha = "";
+
+       switch (mes){
+           case "Jan":
+               nuevaFecha = "Enero "+anno;
+               break;
+           case "Feb":
+               nuevaFecha = "Febrero "+anno;
+               break;
+           case "Mar":
+               nuevaFecha = "Marzo "+anno;
+               break;
+           case "Apr":
+               nuevaFecha = "Abril "+anno;
+               break;
+           case "May":
+               nuevaFecha = "Mayo "+anno;
+               break;
+           case "Jun":
+               nuevaFecha = "Junio "+anno;
+               break;
+           case "Jul":
+               nuevaFecha = "Julio "+anno;
+               break;
+           case "Aug":
+               nuevaFecha = "Agosto "+anno;
+               break;
+           case "Sep":
+               nuevaFecha = "Setiembre "+anno;
+               break;
+           case "Oct":
+               nuevaFecha = "Octubre "+anno;
+               break;
+           case "Nov":
+               nuevaFecha = "Noviembre "+anno;
+               break;
+           case "Dec":
+               nuevaFecha = "Diciembre "+anno;
+               break;
+       }
+       return new SimpleStringProperty(nuevaFecha);
     }
 
 }

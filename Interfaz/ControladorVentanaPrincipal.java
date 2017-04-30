@@ -17,6 +17,7 @@ import javax.swing.table.*;
 import javax.xml.transform.Result;
 import java.net.URL;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ControladorVentanaPrincipal implements Initializable {
@@ -746,6 +747,13 @@ public class ControladorVentanaPrincipal implements Initializable {
             cuadroColaboradorBaresRecomendados.getSelectionModel().clearSelection();
             cuadroColaboradoresBaresRecomendadosCorreo.getSelectionModel().clearSelection();
         });
+
+        botonComentariosRestaurante.setOnAction(event -> {
+            consultarComentariosRestaurante();
+            cuadroCiudadComentariosRestaurante.getSelectionModel().clearSelection();
+            cuadroNombreComentariosRestaurante.getSelectionModel().clearSelection();
+
+        });
     }
 
     public void establecerConexion() {
@@ -1070,7 +1078,7 @@ public class ControladorVentanaPrincipal implements Initializable {
         agregarComentarioValoracion.getItems().addAll("1", "2", "3", "4", "5");
         agregarComentarioMes.getItems().addAll("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio"
                 , "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre");
-        agregarComentarioAnno.getItems().addAll("2016","2015","2014","2013","2012","2011","2010","2009","2008","2007"
+        agregarComentarioAnno.getItems().addAll("2017","2016","2015","2014","2013","2012","2011","2010","2009","2008","2007"
         ,"2006","2005","2004","2003","2002","2001","2000");
         cuadroValoracionPlatillo.getItems().addAll("1", "2", "3", "4", "5");
 
@@ -1248,7 +1256,11 @@ public class ControladorVentanaPrincipal implements Initializable {
         columnaAmigoBaresRecomendados.setCellValueFactory(new PropertyValueFactory<Restaurante,String>("amigo"));
         columnaNombreBaresRecomendados.setCellValueFactory(new PropertyValueFactory<Restaurante,String>("nombre"));
         columnaValoracionBaresRecomendados.setCellValueFactory(new PropertyValueFactory<Restaurante,String>("valoracion"));
-
+        columnaFechasComentariosRestaurante.setCellValueFactory(new PropertyValueFactory<Comentario,String>("fecha"));
+        columnaTextoComentariosRestaurante.setCellValueFactory(new PropertyValueFactory<Comentario,String>("texto"));
+        columnaAmigoPlatillosValorados.setCellValueFactory(new PropertyValueFactory<ComentarioPlatillo,String>("amigo"));
+        columnaNombrePlatillosValorados.setCellValueFactory(new PropertyValueFactory<ComentarioPlatillo,String>("nombrePlatillo"));
+        columnaValoracionPlatillosValorados.setCellValueFactory(new PropertyValueFactory<ComentarioPlatillo,String>("valoracion"));
     }
 
     public void refrescarSolicitudesAmistad() {
@@ -2341,9 +2353,15 @@ public class ControladorVentanaPrincipal implements Initializable {
         }
         else{
             Comentario comentario = (Comentario) tablaRestaurantesComentarios.getSelectionModel().getSelectedItem();
-            comentarioSeleccionado= comentario;
-            ObservableList<String> platillosRestaurante = platillosRestaurantes(comentario.getRestaurante());
-            cuadroPlatillosRestaurante.setItems(platillosRestaurante);
+            if(!comentario.getColaborador().equals(correoColaboradorLogueado) || correoColaboradorLogueado.equals("")){
+                ventanaError("Debe loguearse para agregar un comentario de platillo o el usuario logueado no corresponde");
+            }
+            else {
+
+                comentarioSeleccionado = comentario;
+                ObservableList<String> platillosRestaurante = platillosRestaurantes(comentario.getRestaurante());
+                cuadroPlatillosRestaurante.setItems(platillosRestaurante);
+            }
         }
 
 
@@ -2477,24 +2495,40 @@ public class ControladorVentanaPrincipal implements Initializable {
         else{
             try{
                 ArrayList<Comentario> comentarios = new ArrayList<>();
+                List<Comentario> comentariosTop10 = new ArrayList<>();
                 String nombreRestaurante = restauranteSeleccionado.toString();
-                //String nombreCiudad = ciudadSeleccionada.toString();
-                //int idCiudad = buscarIdCiudad(nombreCiudad);
+
                 int idRestaurante = buscarIdRestaurante(nombreRestaurante);
-                String comentariosRestaurante = "SELECT ANHO, MES, TEXTO FROM COMENTARIOS WHERE IDRESTAURANTE = ?";
+                String comentariosRestaurante = "SELECT ANHO, MES, TEXTO FROM COMENTARIOS WHERE NOMBRERESTAURANTE = ?";
                 PreparedStatement buscarComentarios = connection.prepareStatement(comentariosRestaurante);
                 buscarComentarios.setInt(1, idRestaurante);
                 ResultSet fechasComentarios = buscarComentarios.executeQuery();
 
                 while (fechasComentarios.next()){
-                    comentarios.add(new Comentario (fechasComentarios.getString("ANHO"), fechasComentarios.getString("MES"),fechasComentarios.getString("TEXTO")));
+                    String fechaAUsar = fechaAUsar(fechasComentarios.getString("MES"),fechasComentarios.getString("ANHO"));
+                    comentarios.add(new Comentario (fechaAUsar,fechasComentarios.getString("TEXTO")));
                 }
 
-                ArrayList<Comentario> diezComentarios = new ArrayList<>();
-                //ordenar por fecha, meter en arraylist auxiliar
+                Collections.sort(comentarios, new Comparator<Comentario>() {
+                    @Override
+                    public int compare(Comentario o1, Comentario o2) {
+                        return o1.fechaUsar.compareTo(o2.fechaUsar);
+                    }
+                });
 
-                ObservableList<Comentario> comentariosPorFecha = FXCollections.observableArrayList(comentarios);
-                tablaComentariosRestaurante.setItems(comentariosPorFecha);
+                for (Comentario comentario : comentarios) {
+                    comentario.fecha = comentario.settearFecha(comentario.fechaUsar);
+                }
+                if(comentarios.size()>10){
+                    comentariosTop10 = comentarios.subList(comentarios.size()-10,comentarios.size());
+                    ObservableList<Comentario> comentariosCropped = FXCollections.observableList(comentariosTop10);
+                    tablaComentariosRestaurante.setItems(comentariosCropped);
+                }
+                else {
+                    ObservableList<Comentario> comentariosPorFecha = FXCollections.observableArrayList(comentarios);
+                    tablaComentariosRestaurante.setItems(comentariosPorFecha);
+                }
+
 
 
             }
@@ -2630,6 +2664,50 @@ public class ControladorVentanaPrincipal implements Initializable {
 
     }
 
+    public String fechaAUsar(String mes,String anno){
+        String fechaCorrecta = "";
+        switch (mes){
+            case "Enero":
+                fechaCorrecta = "JAN-"+anno;
+                break;
+            case "Febrero":
+                fechaCorrecta = "FEB-"+anno;
+                break;
+            case "Marzo":
+                fechaCorrecta = "MAR-"+anno;
+                break;
+            case "Abril":
+                fechaCorrecta = "APR-"+anno;
+                break;
+            case "Mayo":
+                fechaCorrecta = "MAY-"+anno;
+                break;
+            case "Junio":
+                fechaCorrecta = "JUN-"+anno;
+                break;
+            case "Julio":
+                fechaCorrecta = "JUL-"+anno;
+                break;
+            case "Agosto":
+                fechaCorrecta = "AUG-"+anno;
+                break;
+            case "Setiembre":
+                fechaCorrecta = "SEP-"+anno;
+                break;
+            case "Octubre":
+                fechaCorrecta = "OCT-"+anno;
+                break;
+            case "Noviembre":
+                fechaCorrecta = "NOV-"+anno;
+                break;
+            case "Diciembre":
+                fechaCorrecta = "DEC-"+anno;
+                break;
+
+        }
+        return fechaCorrecta;
+    }
+
     public void consultarBaresRecomendados(){
         Object ciudadSeleccionada = cuadroCiudadBaresRecomendados.getSelectionModel().getSelectedItem();
         Object colaboradorSeleccionado = cuadroColaboradorBaresRecomendados.getSelectionModel().getSelectedItem();
@@ -2678,6 +2756,12 @@ public class ControladorVentanaPrincipal implements Initializable {
                             String.valueOf(busquedaOtroLadoTuples.getInt("VALORACION"))));
 
                 }
+                Collections.sort(consulta, new Comparator<Restaurante>() {
+                    @Override
+                    public int compare(Restaurante o1, Restaurante o2) {
+                       return Integer.parseInt(o2.getValoracion()) - Integer.parseInt(o1.getValoracion());
+                    }
+                });
 
                 ObservableList<Restaurante> listaConsultada = FXCollections.observableArrayList(consulta);
                 tablaBaresRecomendados.setItems(listaConsultada);
@@ -2700,20 +2784,46 @@ public class ControladorVentanaPrincipal implements Initializable {
             try{
                 ArrayList<ComentarioPlatillo> valoracionPlatillos = new ArrayList<>();
                 String nombreRestaurante = restauranteSeleccionado.toString();
-                String nombreColaborador = colaboradorSeleccionado.toString();
                 String correoColaborador = correoSeleccionado.toString();
                 int idRestaurante = buscarIdRestaurante(nombreRestaurante);
-                String comentariosPlatillos = "SELECT IDPLATILLO, VALORACION FROM COMENTARIOSPLATILLOS, PLATILLOS" +
-                    "WHERE IDRESTAURANTE = ?";
-                PreparedStatement buscarComentarios = connection.prepareStatement(comentariosPlatillos);
-                buscarComentarios.setInt(1, idRestaurante);
-                ResultSet valoraciones = buscarComentarios.executeQuery();
 
-                while (valoraciones.next()){
-                    valoracionPlatillos.add(new ComentarioPlatillo (valoraciones.getString("IDPLATILLO"), valoraciones.getString("VALORACION")));
+                String comentariosUnLado = "SELECT comp.IDPLATILLO, comp.VALORACION, com.CORREOCOLABORADOR FROM COMENTARIOSPLATILLOS comp,COMENTARIOS com, COLABORADORES col, AMIGOS am  " +
+                "WHERE com.ID = comp.IDCOMENTARIO AND NOMBRERESTAURANTE = ? AND com.CORREOCOLABORADOR = col.CORREO"+
+                        " AND col.CORREO = am.CORREOCOLABORADOR AND am.CORREOAMIGO = ? AND am.ACEPTADO = ?";
+
+                PreparedStatement buscarComentarios = connection.prepareStatement(comentariosUnLado);
+                buscarComentarios.setInt(1, idRestaurante);
+                buscarComentarios.setString(2,correoColaborador);
+                buscarComentarios.setString(3,"SI");
+                ResultSet busquedaComentariosPlatillosUnLado = buscarComentarios.executeQuery();
+
+                while (busquedaComentariosPlatillosUnLado.next()){
+                    String nombrePlatillo = buscarPlatilloPorId(idRestaurante,busquedaComentariosPlatillosUnLado.getInt("IDPLATILLO"));
+                    valoracionPlatillos.add(new ComentarioPlatillo (busquedaComentariosPlatillosUnLado.getString("CORREOCOLABORADOR"),nombrePlatillo,
+                            String.valueOf(busquedaComentariosPlatillosUnLado.getInt("VALORACION"))));
                 }
 
-                //ordenar por valoracion
+                String comentariosOtroLado = "SELECT comp.IDPLATILLO, comp.VALORACION, com.CORREOCOLABORADOR FROM COMENTARIOSPLATILLOS comp,COMENTARIOS com, COLABORADORES col, AMIGOS am  " +
+                        "WHERE com.ID = comp.IDCOMENTARIO AND NOMBRERESTAURANTE = ? AND com.CORREOCOLABORADOR = col.CORREO"+
+                        " AND col.CORREO = am.CORREOAMIGO AND am.CORREOCOLABORADOR = ? AND am.ACEPTADO = ?";
+                PreparedStatement buscarComentariosOtroLado = connection.prepareStatement(comentariosOtroLado);
+                buscarComentariosOtroLado.setInt(1,idRestaurante);
+                buscarComentariosOtroLado.setString(2,correoColaborador);
+                buscarComentariosOtroLado.setString(3,"SI");
+                ResultSet busquedaComentariosPlatillosOtroLado = buscarComentariosOtroLado.executeQuery();
+
+                while(busquedaComentariosPlatillosOtroLado.next()){
+                    String nombrePlatillo = buscarPlatilloPorId(idRestaurante,busquedaComentariosPlatillosOtroLado.getInt("IDPLATILLO"));
+                    valoracionPlatillos.add(new ComentarioPlatillo (busquedaComentariosPlatillosOtroLado.getString("CORREOCOLABORADOR"),nombrePlatillo,
+                            String.valueOf(busquedaComentariosPlatillosOtroLado.getInt("VALORACION"))));
+                }
+
+                Collections.sort(valoracionPlatillos, new Comparator<ComentarioPlatillo>() {
+                    @Override
+                    public int compare(ComentarioPlatillo o1, ComentarioPlatillo o2) {
+                        return Integer.parseInt(o2.getValoracion())-Integer.parseInt(o1.getValoracion());
+                    }
+                });
 
                 ObservableList<ComentarioPlatillo> platillosPorValoracion = FXCollections.observableArrayList(valoracionPlatillos);
                 tablaPlatillosValorados.setItems(platillosPorValoracion);
@@ -2725,5 +2835,28 @@ public class ControladorVentanaPrincipal implements Initializable {
         }
 
     }
+
+    public String buscarPlatilloPorId(int idRestaurante,int idPlatillo){
+        String nombreEncontrado = "";
+        try{
+
+            String nombrePlatillo = "SELECT NOMBRE FROM PLATILLOS WHERE IDRESTAURANTE =? AND ID=?";
+            PreparedStatement buscarPlatillo = connection.prepareStatement(nombrePlatillo);
+            buscarPlatillo.setInt(1,idRestaurante);
+            buscarPlatillo.setInt(2,idPlatillo);
+            ResultSet busquedaNombrePlatillo = buscarPlatillo.executeQuery();
+
+            while(busquedaNombrePlatillo.next()){
+                nombreEncontrado = busquedaNombrePlatillo.getString("NOMBRE");
+            }
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return nombreEncontrado;
+    }
+
+
 
 }
