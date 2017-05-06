@@ -2756,16 +2756,82 @@ public class ControladorVentanaPrincipal implements Initializable {
                             String.valueOf(busquedaOtroLadoTuples.getInt("VALORACION"))));
 
                 }
+//****************************************SACO PROMEDIO
+                ArrayList<Restaurante> repetidos = new ArrayList<>();
+                int contador = 0;
+                float promedio = 0;
+                boolean yaSumo = false;
+                boolean huboRepetido = false;
+               String restActual = "";
+               String amigoActual = "";
+
+                for (Restaurante restaurante : consulta) {
+                    for (Restaurante restaurante1 : consulta) {
+                        amigoActual= restaurante.getAmigo();
+                        restActual = restaurante.getNombre();
+                        if (restaurante.getAmigo().equals(restaurante1.getAmigo())  && restaurante.getNombre().equals(restaurante1.getNombre())) {
+                            if (restaurante.equals(restaurante1))
+                                contador++;
+                            else {
+                                huboRepetido = true;
+                                if (yaSumo) {
+                                    promedio += Integer.parseInt(restaurante1.getValoracion());
+                                } else {
+                                    promedio += Integer.parseInt(restaurante.getValoracion()) + Integer.parseInt(restaurante1.getValoracion());
+                                    yaSumo = true;
+                                }
+                                contador++;
+                            }
+                        }
+
+                    }
+                    if(huboRepetido) {
+                        promedio = promedio/contador;
+                        boolean existe = false;
+                        Restaurante restRepetido = new Restaurante(restActual,amigoActual, String.valueOf(promedio));
+                        for (Restaurante repetido : repetidos) {
+                            if(restRepetido.getNombre().equals(repetido.getNombre()) && restRepetido.getAmigo().equals(repetido.getAmigo()))
+                                existe=true;
+                        }
+                        if(!existe)
+                            repetidos.add(restRepetido);
+
+                    }
+                    amigoActual="";
+                    restActual="";
+                    promedio=0;
+                    contador= 0;
+                    huboRepetido=false;
+                    yaSumo=false;
+                }
+                int contadorAux = 0;
+                boolean entro = false;
+                for (Restaurante repetido : repetidos) {
+                    while(contadorAux<consulta.size()) {
+
+                        Restaurante actual = consulta.get(contadorAux);
+                        if (repetido.getNombre().equals(actual.getNombre()) && actual.getAmigo().equals(repetido.getAmigo())) {
+                            consulta.remove(actual);
+                            contadorAux = 0;
+                            entro = true;
+                        }
+                        if(!entro)
+                            contadorAux++;
+                        entro=false;
+
+                    }
+                    contadorAux=0;
+                }
+                consulta.addAll(repetidos);
+                //****************************************SACO PROMEDIO
                 Collections.sort(consulta, new Comparator<Restaurante>() {
                     @Override
                     public int compare(Restaurante o1, Restaurante o2) {
-                       return Integer.parseInt(o2.getValoracion()) - Integer.parseInt(o1.getValoracion());
+                        return Float.valueOf(o2.getValoracion()).compareTo(Float.valueOf(o1.getValoracion()));//(int)Float.parseFloat(o2.getValoracion()) - Float.parseFloat(o1.getValoracion()));
                     }
                 });
-
                 ObservableList<Restaurante> listaConsultada = FXCollections.observableArrayList(consulta);
                 tablaBaresRecomendados.setItems(listaConsultada);
-
 
             }
             catch(SQLException e){
